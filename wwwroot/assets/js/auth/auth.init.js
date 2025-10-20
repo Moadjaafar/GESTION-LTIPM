@@ -1,37 +1,27 @@
-/*
-Template Name: Urbix - Admin & Dashboard Template
-Author: Pixeleyez
-Website: https://pixeleyez.com/
-File: Auth init js
-*/
+/**
+ * Auth page initialization
+ * Handles password toggle functionality for login forms
+ */
 
-// Initialize password toggle functionality
-document.addEventListener("DOMContentLoaded", function () {
-  initPasswordToggle();
-});
+document.addEventListener('DOMContentLoaded', function() {
+    // Password toggle functionality
+    const togglePasswordButtons = document.querySelectorAll('.toggle-password');
 
-function initPasswordToggle() {
-  const toggles = document.querySelectorAll(".toggle-password");
-  if (!toggles.length) return;
+    togglePasswordButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const passwordInput = document.getElementById(targetId);
+            const icon = this.querySelector('i');
 
-  toggles.forEach((toggle) => {
-    toggle.addEventListener("click", function () {
-      const targetId = this.getAttribute("data-target");
-      if (!targetId) return;
-
-      const targetInput = document.getElementById(targetId);
-      if (!targetInput) return;
-
-      const icon = this.querySelector("i");
-      if (!icon) return;
-
-      if (targetInput.type === "password") {
-        targetInput.type = "text";
-        icon.classList.replace("ri-eye-off-line", "ri-eye-line");
-      } else {
-        targetInput.type = "password";
-        icon.classList.replace("ri-eye-line", "ri-eye-off-line");
-      }
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('ri-eye-off-line');
+                icon.classList.add('ri-eye-line');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('ri-eye-line');
+                icon.classList.add('ri-eye-off-line');
+            }
+        });
     });
-  });
-}
+});

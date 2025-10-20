@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test -f \"wwwroot/assets/images/favicon.png\")",
+      "Bash(test -f \"wwwroot/assets/css/bootstrap.min.css\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
