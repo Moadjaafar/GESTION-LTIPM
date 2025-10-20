@@ -1,0 +1,111 @@
+@model GESTION_LTIPN.Models.VoyageViewModel
+
+@{
+    ViewData["Title"] = "Arrivée Retour";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Enregistrer l'arrivée retour - @Model.BookingReference</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="ReturnArrival" method="post">
+                    <input type="hidden" asp-for="VoyageId" />
+                    <input type="hidden" asp-for="BookingId" />
+                    <input type="hidden" asp-for="VoyageNumber" />
+                    <input type="hidden" asp-for="DepartureCity" />
+                    <input type="hidden" asp-for="DepartureType" />
+                    <input type="hidden" asp-for="ReturnArrivalCity" />
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                        </div>
+                    }
+
+                    <div class="alert alert-success">
+                        <i class="ri-checkbox-circle-line me-1"></i>
+                        Voyage numéro <strong>@Model.VoyageNumber</strong> - Finalisation du voyage
+                    </div>
+
+                    <!-- Read-only voyage information -->
+                    <div class="card mb-4 bg-light">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3">Résumé du voyage</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted small">Ville de départ initiale</label>
+                                    <p class="mb-0">@Model.DepartureCity</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted small">Destination finale (Retour)</label>
+                                    <p class="mb-0">@Model.ReturnArrivalCity</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted small">Date de départ retour</label>
+                                    <p class="mb-0">
+                                        @if (Model.ReturnDepartureDate.HasValue)
+                                        {
+                                            @Model.ReturnDepartureDate.Value.ToString("dd/MM/yyyy")
+                                        }
+                                    </p>
+                                </div>
+                                @if (!string.IsNullOrEmpty(Model.CamionFirstMatricule))
+                                {
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-muted small">Camion</label>
+                                        <p class="mb-0">@Model.CamionFirstMatricule</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Return Arrival Date & Time -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="ReturnArrivalDate" class="form-label">Date d'arrivée à @Model.ReturnArrivalCity <span class="text-danger">*</span></label>
+                            <input asp-for="ReturnArrivalDate" class="form-control" type="date" required />
+                            <span asp-validation-for="ReturnArrivalDate" class="text-danger"></span>
+                            <small class="text-muted">Cette date marque la fin du voyage</small>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="ReturnArrivalTime" class="form-label">Heure d'arrivée</label>
+                            <input asp-for="ReturnArrivalTime" class="form-control" type="time" />
+                            <span asp-validation-for="ReturnArrivalTime" class="text-danger"></span>
+                            <small class="text-muted">Heure d'arrivée à destination</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a asp-action="AssignVoyages" asp-route-bookingId="@Model.BookingId" class="btn btn-secondary">
+                            <i class="ri-arrow-left-line me-1"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="ri-check-double-line me-1"></i> Finaliser le voyage
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body bg-light-subtle">
+                <h6 class="fw-semibold mb-2"><i class="ri-information-line me-1"></i> Information</h6>
+                <ul class="mb-0 small text-muted">
+                    <li>Enregistrez l'arrivée du camion à <strong>@Model.ReturnArrivalCity</strong></li>
+                    <li>Cette action marquera le voyage comme <strong>"Complété"</strong></li>
+                    <li>La date d'arrivée doit être postérieure ou égale à la date de départ retour</li>
+                    <li>Une fois complété, le voyage ne pourra plus être modifié</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,186 @@
+@model IEnumerable<GESTION_LTIPN.Models.Camion>
+
+@{
+    ViewData["Title"] = "Gestion des Camions";
+    var filter = ViewBag.Filter as string;
+    var societiesTransp = ViewBag.SocietiesTransp as List<GESTION_LTIPN.Models.SocietyTransp>;
+    var selectedSocietyTranspId = ViewBag.SelectedSocietyTranspId as int?;
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">Camions</h4>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="ri-add-line me-1"></i> Ajouter un camion
+                </a>
+            </div>
+            <div class="card-body">
+                <!-- Filter Section -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <ul class="nav nav-pills">
+                            <li class="nav-item">
+                                <a class="nav-link @(filter == "all" ? "active" : "")" asp-action="Index" asp-route-filter="all" asp-route-societyTranspId="@selectedSocietyTranspId">
+                                    Tous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(filter == "active" ? "active" : "")" asp-action="Index" asp-route-filter="active" asp-route-societyTranspId="@selectedSocietyTranspId">
+                                    Actifs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(filter == "inactive" ? "active" : "")" asp-action="Index" asp-route-filter="inactive" asp-route-societyTranspId="@selectedSocietyTranspId">
+                                    Inactifs
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <form asp-action="Index" method="get" class="d-flex gap-2">
+                            <input type="hidden" name="filter" value="@filter" />
+                            <select name="societyTranspId" class="form-select" onchange="this.form.submit()">
+                                <option value="">-- Toutes les sociétés de transport --</option>
+                                @if (societiesTransp != null)
+                                {
+                                    @foreach (var society in societiesTransp)
+                                    {
+                                        <option value="@society.SocietyTranspId" selected="@(selectedSocietyTranspId == society.SocietyTranspId)">
+                                            @society.SocietyTranspName
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            @if (selectedSocietyTranspId.HasValue)
+                            {
+                                <a asp-action="Index" asp-route-filter="@filter" class="btn btn-secondary">
+                                    <i class="ri-close-line"></i>
+                                </a>
+                            }
+                        </form>
+                    </div>
+                </div>
+
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Type</th>
+                                    <th>Chauffeur</th>
+                                    <th>Téléphone</th>
+                                    <th>Société</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var camion in Model)
+                                {
+                                    <tr>
+                                        <td><strong>@camion.CamionMatricule</strong></td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(camion.CamionType))
+                                            {
+                                                @switch (camion.CamionType)
+                                                {
+                                                    case "INTERN":
+                                                        <span class="badge bg-success">Interne</span>
+                                                        break;
+                                                    case "EXTERN":
+                                                        <span class="badge bg-primary">Externe</span>
+                                                        break;
+                                                    default:
+                                                        <span>@camion.CamionType</span>
+                                                        break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <text>-</text>
+                                            }
+                                        </td>
+                                        <td>@(camion.DriverName ?? "-")</td>
+                                        <td>@(camion.DriverPhone ?? "-")</td>
+                                        <td>@(camion.SocietyTransp?.SocietyTranspName ?? "-")</td>
+                                        <td>
+                                            @if (camion.IsActive)
+                                            {
+                                                <span class="badge bg-success">Actif</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactif</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <a asp-action="Details" asp-route-id="@camion.CamionId" class="btn btn-sm btn-outline-primary" title="Détails">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@camion.CamionId" class="btn btn-sm btn-outline-warning" title="Modifier">
+                                                    <i class="ri-edit-line"></i>
+                                                </a>
+                                                <form asp-action="ToggleStatus" asp-route-id="@camion.CamionId" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    @if (camion.IsActive)
+                                                    {
+                                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Désactiver">
+                                                            <i class="ri-toggle-line"></i>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Activer">
+                                                            <i class="ri-toggle-fill"></i>
+                                                        </button>
+                                                    }
+                                                </form>
+                                                <form asp-action="Delete" asp-route-id="@camion.CamionId" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer" onclick="return confirm('Voulez-vous vraiment supprimer ce camion ?')">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="ri-truck-line fs-1 text-muted d-block mb-2"></i>
+                        <p class="text-muted mb-3">Aucun camion trouvé</p>
+                        <a asp-action="Create" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i> Créer le premier camion
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

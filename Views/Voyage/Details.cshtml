@@ -1,0 +1,279 @@
+@model GESTION_LTIPN.Models.Voyage
+
+@{
+    ViewData["Title"] = "Détails du Voyage";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">Voyage #@Model.VoyageNumber - @Model.Booking?.BookingReference</h4>
+                <a asp-action="AssignVoyages" asp-route-bookingId="@Model.BookingId" class="btn btn-secondary btn-sm">
+                    <i class="ri-arrow-left-line me-1"></i> Retour
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-md-6">
+                        <h6 class="fw-semibold mb-3">Informations Générales</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-50">Numéro de voyage:</th>
+                                <td><strong>#@Model.VoyageNumber</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Numéro TC:</th>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(Model.Numero_TC))
+                                    {
+                                        <span class="badge bg-info">@Model.Numero_TC</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Non défini</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Réservation:</th>
+                                <td>
+                                    <a asp-controller="Booking" asp-action="Details" asp-route-id="@Model.BookingId">
+                                        @Model.Booking?.BookingReference
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Société Principale:</th>
+                                <td>@Model.SocietyPrincipale?.SocietyName</td>
+                            </tr>
+                            <tr>
+                                <th>Société Secondaire:</th>
+                                <td>@(Model.SocietySecondaire?.SocietyName ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th>Camion (1er départ):</th>
+                                <td>
+                                    @if (Model.CamionFirst != null)
+                                    {
+                                        <text>@Model.CamionFirst.CamionMatricule</text>
+                                        if (!string.IsNullOrEmpty(Model.CamionFirst.DriverName))
+                                        {
+                                            <br />
+                                            <small class="text-muted">Chauffeur: @Model.CamionFirst.DriverName</small>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Non assigné</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Camion (2ème départ):</th>
+                                <td>
+                                    @if (Model.CamionSecond != null)
+                                    {
+                                        <text>@Model.CamionSecond.CamionMatricule</text>
+                                        if (!string.IsNullOrEmpty(Model.CamionSecond.DriverName))
+                                        {
+                                            <br />
+                                            <small class="text-muted">Chauffeur: @Model.CamionSecond.DriverName</small>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Non assigné</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Statut:</th>
+                                <td>
+                                    @switch (Model.VoyageStatus)
+                                    {
+                                        case "Planned":
+                                            <span class="badge bg-secondary">Planifié</span>
+                                            break;
+                                        case "InProgress":
+                                            <span class="badge bg-warning">En cours</span>
+                                            break;
+                                        case "Completed":
+                                            <span class="badge bg-success">Complété</span>
+                                            break;
+                                        case "Cancelled":
+                                            <span class="badge bg-danger">Annulé</span>
+                                            break;
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-md-6">
+                        <h6 class="fw-semibold mb-3">Détails du Trajet</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-50">Ville de départ:</th>
+                                <td>@Model.DepartureCity</td>
+                            </tr>
+                            <tr>
+                                <th>Date de départ:</th>
+                                <td>
+                                    @if (Model.DepartureDate.HasValue)
+                                    {
+                                        @Model.DepartureDate.Value.ToString("dd/MM/yyyy")
+                                        if (Model.DepartureTime.HasValue)
+                                        {
+                                            <text> à @Model.DepartureTime.Value.ToString(@"hh\:mm")</text>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Non défini</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Type de départ:</th>
+                                <td>
+                                    @if (Model.DepartureType == "Emballage")
+                                    {
+                                        <span class="badge bg-info">Emballage</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Vide</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Destination:</th>
+                                <td>Dakhla</td>
+                            </tr>
+                            @if (Model.ReceptionDate.HasValue)
+                            {
+                                <tr>
+                                    <th>Réception à Dakhla:</th>
+                                    <td>
+                                        @Model.ReceptionDate.Value.ToString("dd/MM/yyyy")
+                                        @if (Model.ReceptionTime.HasValue)
+                                        {
+                                            <text> à @Model.ReceptionTime.Value.ToString(@"hh\:mm")</text>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Return Information -->
+                @if (Model.ReturnDepartureDate.HasValue || Model.ReturnArrivalDate.HasValue)
+                {
+                    <hr class="my-4" />
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="fw-semibold mb-3">Informations de Retour</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                @if (Model.ReturnDepartureDate.HasValue)
+                                {
+                                    <tr>
+                                        <th class="w-50">Départ de Dakhla:</th>
+                                        <td>
+                                            @Model.ReturnDepartureDate.Value.ToString("dd/MM/yyyy")
+                                            @if (Model.ReturnDepartureTime.HasValue)
+                                            {
+                                                <text> à @Model.ReturnDepartureTime.Value.ToString(@"hh\:mm")</text>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.ReturnArrivalCity))
+                                {
+                                    <tr>
+                                        <th>Ville d'arrivée:</th>
+                                        <td>@Model.ReturnArrivalCity</td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                @if (Model.ReturnArrivalDate.HasValue)
+                                {
+                                    <tr>
+                                        <th class="w-50">Date d'arrivée:</th>
+                                        <td>@Model.ReturnArrivalDate.Value.ToString("dd/MM/yyyy")</td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    </div>
+                }
+
+                <!-- Pricing Information -->
+                @if (Model.PricePrincipale.HasValue || Model.PriceSecondaire.HasValue)
+                {
+                    <hr class="my-4" />
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="fw-semibold mb-3">Tarification</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                @if (Model.PricePrincipale.HasValue)
+                                {
+                                    <tr>
+                                        <th class="w-50">Prix Société Principale:</th>
+                                        <td><strong>@Model.PricePrincipale.Value.ToString("N2") @Model.Currency</strong></td>
+                                    </tr>
+                                }
+                                @if (Model.PriceSecondaire.HasValue)
+                                {
+                                    <tr>
+                                        <th>Prix Société Secondaire:</th>
+                                        <td><strong>@Model.PriceSecondaire.Value.ToString("N2") @Model.Currency</strong></td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    </div>
+                }
+
+                <!-- Validation Information -->
+                @if (Model.IsValidated && Model.ValidatedAt.HasValue)
+                {
+                    <hr class="my-4" />
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-success">
+                                <i class="ri-checkbox-circle-line me-1"></i>
+                                Voyage validé le @Model.ValidatedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                @if (Model.ValidatedByUser != null)
+                                {
+                                    <text> par @Model.ValidatedByUser.Username</text>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Timestamps -->
+                <hr class="my-4" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">Créé le: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <small class="text-muted">Dernière mise à jour: @Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

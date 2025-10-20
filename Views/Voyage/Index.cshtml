@@ -1,0 +1,137 @@
+@model IEnumerable<GESTION_LTIPN.Models.Booking>
+
+@{
+    ViewData["Title"] = "Validation et Gestion des Voyages";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Réservations à valider et gérer</h4>
+            </div>
+            <div class="card-body">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <!-- Pending Bookings -->
+                <h5 class="mb-3">Réservations en attente de validation</h5>
+                <div class="table-responsive mb-5">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Référence</th>
+                                <th>Société</th>
+                                <th>Type</th>
+                                <th>Nbr LTC</th>
+                                <th>Créé le</th>
+                                <th>Créé par</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var pendingBookings = Model.Where(b => b.BookingStatus == "Pending").ToList();
+                            }
+                            @if (pendingBookings.Any())
+                            {
+                                @foreach (var item in pendingBookings)
+                                {
+                                    <tr>
+                                        <td><strong class="text-primary">@item.BookingReference</strong></td>
+                                        <td>@item.Society?.SocietyName</td>
+                                        <td>@item.TypeVoyage</td>
+                                        <td><strong>@item.Nbr_LTC</strong></td>
+                                        <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@item.CreatedByUser?.Username</td>
+                                        <td>
+                                            <form asp-action="Validate" asp-route-id="@item.BookingId" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Voulez-vous valider cette réservation ?')">
+                                                    <i class="ri-check-line me-1"></i> Valider
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center py-3">
+                                        <i class="ri-checkbox-circle-line fs-1 text-success d-block mb-2"></i>
+                                        <p class="text-muted mb-0">Aucune réservation en attente de validation</p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Validated Bookings -->
+                <h5 class="mb-3 mt-5">Réservations validées - Gestion des voyages</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Référence</th>
+                                <th>Société</th>
+                                <th>Type</th>
+                                <th>Nbr LTC</th>
+                                <th>Validé le</th>
+                                <th>Validé par</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var validatedBookings = Model.Where(b => b.BookingStatus == "Validated").ToList();
+                            }
+                            @if (validatedBookings.Any())
+                            {
+                                @foreach (var item in validatedBookings)
+                                {
+                                    <tr>
+                                        <td><strong class="text-primary">@item.BookingReference</strong></td>
+                                        <td>@item.Society?.SocietyName</td>
+                                        <td>@item.TypeVoyage</td>
+                                        <td><strong>@item.Nbr_LTC</strong></td>
+                                        <td>@item.ValidatedAt?.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@item.ValidatedByUser?.Username</td>
+                                        <td>
+                                            <a asp-action="AssignVoyages" asp-route-bookingId="@item.BookingId" class="btn btn-sm btn-primary">
+                                                <i class="ri-route-line me-1"></i> Gérer les voyages
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center py-3">
+                                        <i class="ri-file-list-line fs-1 text-muted d-block mb-2"></i>
+                                        <p class="text-muted mb-0">Aucune réservation validée à gérer</p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

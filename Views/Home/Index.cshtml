@@ -1,0 +1,493 @@
+@model GESTION_LTIPN.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Tableau de bord";
+}
+
+<!-- Statistics Cards -->
+<div class="row">
+    <div class="col-12">
+        <h4 class="mb-4">Statistiques Générales</h4>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Total Bookings -->
+    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+        <div class="card overflow-hidden">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-fill">
+                        <p class="text-muted mb-1">Réservations</p>
+                        <h3 class="mb-0">@Model.TotalBookings</h3>
+                    </div>
+                    <div class="ms-3">
+                        <div class="avatar avatar-lg bg-primary-transparent text-primary">
+                            <i class="ri-calendar-check-line fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-success">@Model.PendingBookings en attente</small>
+                    <span class="text-muted mx-1">•</span>
+                    <small class="text-primary">@Model.ValidatedBookings validées</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Voyages -->
+    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+        <div class="card overflow-hidden">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-fill">
+                        <p class="text-muted mb-1">Voyages</p>
+                        <h3 class="mb-0">@Model.TotalVoyages</h3>
+                    </div>
+                    <div class="ms-3">
+                        <div class="avatar avatar-lg bg-success-transparent text-success">
+                            <i class="ri-route-line fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-warning">@Model.InProgressVoyages en cours</small>
+                    <span class="text-muted mx-1">•</span>
+                    <small class="text-success">@Model.CompletedVoyages terminés</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Societies -->
+    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+        <div class="card overflow-hidden">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-fill">
+                        <p class="text-muted mb-1">Sociétés Actives</p>
+                        <h3 class="mb-0">@Model.ActiveSocieties</h3>
+                    </div>
+                    <div class="ms-3">
+                        <div class="avatar avatar-lg bg-info-transparent text-info">
+                            <i class="ri-building-line fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">Total: @Model.TotalSocieties</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Camions -->
+    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+        <div class="card overflow-hidden">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-fill">
+                        <p class="text-muted mb-1">Camions</p>
+                        <h3 class="mb-0">@Model.ActiveCamions</h3>
+                    </div>
+                    <div class="ms-3">
+                        <div class="avatar avatar-lg bg-warning-transparent text-warning">
+                            <i class="ri-truck-line fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-success">@Model.AvailableCamions disponibles</small>
+                    <span class="text-muted mx-1">•</span>
+                    <small class="text-warning">@Model.CamionsInUse en service</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="row mt-4">
+    <!-- Booking Status Chart -->
+    <div class="col-xl-6 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Réservations par Statut</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="bookingStatusChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voyage Status Chart -->
+    <div class="col-xl-6 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Voyages par Statut</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="voyageStatusChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="row mt-4">
+    <!-- Booking Type Chart -->
+    <div class="col-xl-4 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Type de Voyage</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="bookingTypeChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Departure City Chart -->
+    <div class="col-xl-4 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Ville de Départ</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="departureCityChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camion Type Chart -->
+    <div class="col-xl-4 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Types de Camions</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="camionTypeChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Trends -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Tendances Mensuelles (6 derniers mois)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyTrendsChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities & Top Societies -->
+<div class="row mt-4">
+    <!-- Recent Bookings -->
+    <div class="col-xl-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Réservations Récentes</h5>
+                <a asp-controller="Booking" asp-action="Index" class="btn btn-sm btn-primary">Voir tout</a>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentBookings.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Référence</th>
+                                    <th>Société</th>
+                                    <th>Type</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var booking in Model.RecentBookings)
+                                {
+                                    <tr>
+                                        <td><strong>@booking.BookingReference</strong></td>
+                                        <td>@booking.SocietyName</td>
+                                        <td><span class="badge bg-info">@booking.TypeVoyage</span></td>
+                                        <td>
+                                            @if (booking.BookingStatus == "Pending")
+                                            {
+                                                <span class="badge bg-warning">En attente</span>
+                                            }
+                                            else if (booking.BookingStatus == "Validated")
+                                            {
+                                                <span class="badge bg-success">Validée</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center py-3">Aucune réservation récente</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Societies -->
+    <div class="col-xl-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Top Sociétés</h5>
+                <a asp-controller="Society" asp-action="Index" class="btn btn-sm btn-primary">Voir tout</a>
+            </div>
+            <div class="card-body">
+                @if (Model.TopSocieties.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Société</th>
+                                    <th class="text-center">Réservations</th>
+                                    <th class="text-center">Voyages</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var society in Model.TopSocieties)
+                                {
+                                    <tr>
+                                        <td><strong>@society.SocietyName</strong></td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary">@society.BookingCount</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">@society.VoyageCount</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center py-3">Aucune donnée disponible</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Chart.js configuration
+        Chart.defaults.font.family = 'Inter, sans-serif';
+        Chart.defaults.color = '#6c757d';
+
+        // Booking Status Chart (Doughnut)
+        const bookingStatusData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BookingsByStatus));
+        const bookingStatusCtx = document.getElementById('bookingStatusChart').getContext('2d');
+        new Chart(bookingStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(bookingStatusData).map(key => {
+                    if (key === 'Pending') return 'En attente';
+                    if (key === 'Validated') return 'Validée';
+                    return key;
+                }),
+                datasets: [{
+                    data: Object.values(bookingStatusData),
+                    backgroundColor: ['#ffc107', '#28a745', '#6c757d'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Voyage Status Chart (Bar)
+        const voyageStatusData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VoyagesByStatus));
+        const voyageStatusCtx = document.getElementById('voyageStatusChart').getContext('2d');
+        new Chart(voyageStatusCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(voyageStatusData).map(key => {
+                    if (key === 'Planned') return 'Planifié';
+                    if (key === 'InProgress') return 'En cours';
+                    if (key === 'Completed') return 'Terminé';
+                    if (key === 'Cancelled') return 'Annulé';
+                    return key;
+                }),
+                datasets: [{
+                    label: 'Voyages',
+                    data: Object.values(voyageStatusData),
+                    backgroundColor: ['#6c757d', '#ffc107', '#28a745', '#dc3545'],
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Booking Type Chart (Pie)
+        const bookingTypeData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BookingsByTypeVoyage));
+        const bookingTypeCtx = document.getElementById('bookingTypeChart').getContext('2d');
+        new Chart(bookingTypeCtx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(bookingTypeData),
+                datasets: [{
+                    data: Object.values(bookingTypeData),
+                    backgroundColor: ['#17a2b8', '#fd7e14'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Departure City Chart (Doughnut)
+        const departureCityData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VoyagesByDepartureCity));
+        const departureCityCtx = document.getElementById('departureCityChart').getContext('2d');
+        new Chart(departureCityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(departureCityData),
+                datasets: [{
+                    data: Object.values(departureCityData),
+                    backgroundColor: ['#007bff', '#28a745'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Camion Type Chart (Pie)
+        const camionTypeData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CamionsByType));
+        const camionTypeCtx = document.getElementById('camionTypeChart').getContext('2d');
+        new Chart(camionTypeCtx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(camionTypeData).map(key => {
+                    if (key === 'INTERN') return 'Interne';
+                    if (key === 'EXTERN') return 'Externe';
+                    return key;
+                }),
+                datasets: [{
+                    data: Object.values(camionTypeData),
+                    backgroundColor: ['#28a745', '#007bff'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Monthly Trends Chart (Line)
+        const bookingsByMonth = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BookingsByMonth));
+        const voyagesByMonth = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VoyagesByMonth));
+
+        // Get all months from both datasets
+        const allMonths = [...new Set([...Object.keys(bookingsByMonth), ...Object.keys(voyagesByMonth)])].sort();
+
+        const monthlyTrendsCtx = document.getElementById('monthlyTrendsChart').getContext('2d');
+        new Chart(monthlyTrendsCtx, {
+            type: 'line',
+            data: {
+                labels: allMonths.map(month => {
+                    const [year, monthNum] = month.split('-');
+                    const date = new Date(year, monthNum - 1);
+                    return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+                }),
+                datasets: [{
+                    label: 'Réservations',
+                    data: allMonths.map(month => bookingsByMonth[month] || 0),
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Voyages',
+                    data: allMonths.map(month => voyagesByMonth[month] || 0),
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,173 @@
+@model IEnumerable<GESTION_LTIPN.Models.User>
+
+@{
+    ViewData["Title"] = "Gestion des Utilisateurs";
+    var filter = ViewBag.Filter as string;
+    var selectedRole = ViewBag.SelectedRole as string;
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">Utilisateurs</h4>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="ri-user-add-line me-1"></i> Ajouter un utilisateur
+                </a>
+            </div>
+            <div class="card-body">
+                <!-- Filter Section -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <ul class="nav nav-pills">
+                            <li class="nav-item">
+                                <a class="nav-link @(filter == "all" ? "active" : "")" asp-action="Index" asp-route-filter="all" asp-route-role="@selectedRole">
+                                    Tous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(filter == "active" ? "active" : "")" asp-action="Index" asp-route-filter="active" asp-route-role="@selectedRole">
+                                    Actifs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(filter == "inactive" ? "active" : "")" asp-action="Index" asp-route-filter="inactive" asp-route-role="@selectedRole">
+                                    Inactifs
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <form asp-action="Index" method="get" class="d-flex gap-2">
+                            <input type="hidden" name="filter" value="@filter" />
+                            <select name="role" class="form-select" onchange="this.form.submit()">
+                                <option value="">-- Tous les rôles --</option>
+                                <option value="Admin" selected="@(selectedRole == "Admin")">Administrateur</option>
+                                <option value="Booking_Agent" selected="@(selectedRole == "Booking_Agent")">Agent de Réservation</option>
+                                <option value="Trans_Respo" selected="@(selectedRole == "Trans_Respo")">Responsable Transport</option>
+                            </select>
+                            @if (!string.IsNullOrEmpty(selectedRole))
+                            {
+                                <a asp-action="Index" asp-route-filter="@filter" class="btn btn-secondary">
+                                    <i class="ri-close-line"></i>
+                                </a>
+                            }
+                        </form>
+                    </div>
+                </div>
+
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nom d'utilisateur</th>
+                                    <th>Rôle</th>
+                                    <th>Société</th>
+                                    <th>Statut</th>
+                                    <th>Date de création</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model)
+                                {
+                                    <tr>
+                                        <td><strong>@user.Username</strong></td>
+                                        <td>
+                                            @switch (user.Role)
+                                            {
+                                                case "Admin":
+                                                    <span class="badge bg-danger">Administrateur</span>
+                                                    break;
+                                                case "Booking_Agent":
+                                                    <span class="badge bg-primary">Agent de Réservation</span>
+                                                    break;
+                                                case "Trans_Respo":
+                                                    <span class="badge bg-info">Responsable Transport</span>
+                                                    break;
+                                                default:
+                                                    <span class="badge bg-secondary">@user.Role</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>@(user.Society?.SocietyName ?? "-")</td>
+                                        <td>
+                                            @if (user.IsActive)
+                                            {
+                                                <span class="badge bg-success">Actif</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactif</span>
+                                            }
+                                        </td>
+                                        <td>@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <a asp-action="Details" asp-route-id="@user.UserId" class="btn btn-sm btn-outline-primary" title="Détails">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@user.UserId" class="btn btn-sm btn-outline-warning" title="Modifier">
+                                                    <i class="ri-edit-line"></i>
+                                                </a>
+                                                <form asp-action="ToggleStatus" asp-route-id="@user.UserId" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    @if (user.IsActive)
+                                                    {
+                                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Désactiver">
+                                                            <i class="ri-toggle-line"></i>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Activer">
+                                                            <i class="ri-toggle-fill"></i>
+                                                        </button>
+                                                    }
+                                                </form>
+                                                <form asp-action="Delete" asp-route-id="@user.UserId" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer" onclick="return confirm('Voulez-vous vraiment supprimer cet utilisateur ?')">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="ri-user-line fs-1 text-muted d-block mb-2"></i>
+                        <p class="text-muted mb-3">Aucun utilisateur trouvé</p>
+                        <a asp-action="Create" class="btn btn-primary">
+                            <i class="ri-user-add-line me-1"></i> Créer le premier utilisateur
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

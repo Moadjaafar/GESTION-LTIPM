@@ -1,0 +1,83 @@
+@model GESTION_LTIPN.Models.Society
+
+@{
+    ViewData["Title"] = "Modifier une Société";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Modifier la société - @Model.SocietyName</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="SocietyId" />
+                    <input type="hidden" asp-for="CreatedAt" />
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                        </div>
+                    }
+
+                    <div class="mb-4">
+                        <label asp-for="SocietyName" class="form-label">Nom de la société <span class="text-danger">*</span></label>
+                        <input asp-for="SocietyName" class="form-control" required />
+                        <span asp-validation-for="SocietyName" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Address" class="form-label">Adresse</label>
+                        <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="City" class="form-label">Ville</label>
+                            <input asp-for="City" class="form-control" />
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="Phone" class="form-label">Téléphone</label>
+                            <input asp-for="Phone" class="form-control" type="tel" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Email" class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control" type="email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="form-check-label">
+                                Société active
+                            </label>
+                        </div>
+                        <small class="text-muted">Les sociétés inactives ne seront pas disponibles pour les nouvelles réservations</small>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="ri-arrow-left-line me-1"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="ri-save-line me-1"></i> Mettre à jour
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

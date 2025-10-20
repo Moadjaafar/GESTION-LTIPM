@@ -1,0 +1,125 @@
+@model GESTION_LTIPN.Models.Camion
+
+@{
+    ViewData["Title"] = "Détails du Camion";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">@Model.CamionMatricule</h4>
+                <div class="d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.CamionId" class="btn btn-warning btn-sm">
+                        <i class="ri-edit-line me-1"></i> Modifier
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary btn-sm">
+                        <i class="ri-arrow-left-line me-1"></i> Retour
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-md-6">
+                        <h6 class="fw-semibold mb-3">Informations du Camion</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-40">Matricule:</th>
+                                <td><strong>@Model.CamionMatricule</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Type:</th>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(Model.CamionType))
+                                    {
+                                        @switch (Model.CamionType)
+                                        {
+                                            case "INTERN":
+                                                <span class="badge bg-success">Interne</span>
+                                                break;
+                                            case "EXTERN":
+                                                <span class="badge bg-primary">Externe</span>
+                                                break;
+                                            default:
+                                                <span>@Model.CamionType</span>
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <text>-</text>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Société de Transport:</th>
+                                <td>
+                                    @if (Model.SocietyTransp != null)
+                                    {
+                                        @Model.SocietyTransp.SocietyTranspName
+                                    }
+                                    else
+                                    {
+                                        <text>-</text>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Statut:</th>
+                                <td>
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge bg-success">Actif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactif</span>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-md-6">
+                        <h6 class="fw-semibold mb-3">Informations du Chauffeur</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-40">Nom:</th>
+                                <td>@(Model.DriverName ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th>Téléphone:</th>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(Model.DriverPhone))
+                                    {
+                                        <a href="tel:@Model.DriverPhone">@Model.DriverPhone</a>
+                                    }
+                                    else
+                                    {
+                                        <text>-</text>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+
+                        <h6 class="fw-semibold mb-3 mt-4">Dates</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-40">Créé le:</th>
+                                <td>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                            <tr>
+                                <th>Mise à jour:</th>
+                                <td>@Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Associated Voyages section removed - Camion no longer has direct Voyages navigation property -->
+            </div>
+        </div>
+    </div>
+</div>

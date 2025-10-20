@@ -1,0 +1,191 @@
+@model GESTION_LTIPN.Models.VoyageViewModel
+
+@{
+    ViewData["Title"] = "Assigner les Prix";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="ri-money-dollar-circle-line me-1"></i>
+                    Assigner les prix - @Model.BookingReference - Voyage #@Model.VoyageNumber
+                </h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="AssignPrices" method="post">
+                    <input type="hidden" asp-for="VoyageId" />
+                    <input type="hidden" asp-for="BookingId" />
+                    <input type="hidden" asp-for="VoyageNumber" />
+                    <input type="hidden" asp-for="DepartureCity" />
+                    <input type="hidden" asp-for="DepartureType" />
+                    <input type="hidden" asp-for="SocietyPrincipaleId" />
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                        </div>
+                    }
+
+                    <!-- Voyage Information -->
+                    <div class="card mb-4 bg-light">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3">Informations du voyage</h6>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label text-muted small">Référence Réservation</label>
+                                    <p class="mb-0 fw-medium">@Model.BookingReference</p>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label text-muted small">Numéro de voyage</label>
+                                    <p class="mb-0 fw-medium">Voyage #@Model.VoyageNumber</p>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label text-muted small">Statut</label>
+                                    <p class="mb-0">
+                                        @if (Model.VoyageStatus == "Planned")
+                                        {
+                                            <span class="badge bg-secondary">Planifié</span>
+                                        }
+                                        else if (Model.VoyageStatus == "InProgress")
+                                        {
+                                            <span class="badge bg-primary">En cours</span>
+                                        }
+                                        else if (Model.VoyageStatus == "Completed")
+                                        {
+                                            <span class="badge bg-success">Terminé</span>
+                                        }
+                                        else if (Model.VoyageStatus == "Cancelled")
+                                        {
+                                            <span class="badge bg-danger">Annulé</span>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label text-muted small">Ville de départ</label>
+                                    <p class="mb-0">@Model.DepartureCity</p>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label text-muted small">Type de départ</label>
+                                    <p class="mb-0">
+                                        @if (Model.DepartureType == "Emballage")
+                                        {
+                                            <span class="badge bg-info">Emballage</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">Empty</span>
+                                        }
+                                    </p>
+                                </div>
+                                @if (Model.DepartureDate.HasValue)
+                                {
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label text-muted small">Date de départ</label>
+                                        <p class="mb-0">@Model.DepartureDate.Value.ToString("dd/MM/yyyy")</p>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.CamionSecondMatricule))
+                                {
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label text-muted small">Camion</label>
+                                        <p class="mb-0">@Model.CamionSecondMatricule</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Section -->
+                    <div class="card mb-4 border-primary">
+                        <div class="card-header bg-primary-subtle">
+                            <h6 class="fw-semibold mb-0 text-primary">
+                                <i class="ri-price-tag-3-line me-1"></i> Tarification
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Price Principale -->
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="PricePrincipale" class="form-label fw-medium">
+                                        Prix pour <strong class="text-primary">@Model.SocietyPrincipaleName</strong>
+                                    </label>
+                                    <div class="input-group input-group-lg">
+                                        <input asp-for="PricePrincipale" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" />
+                                        <span class="input-group-text bg-primary text-white fw-bold">MAD</span>
+                                    </div>
+                                    <span asp-validation-for="PricePrincipale" class="text-danger small"></span>
+                                    <small class="text-muted d-block mt-1">Société principale (obligatoire)</small>
+                                </div>
+
+                                @if (Model.HasSecondaryPrice)
+                                {
+                                    <!-- Price Secondaire -->
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="PriceSecondaire" class="form-label fw-medium">
+                                            Prix pour <strong class="text-success">@Model.SocietySecondaireName</strong>
+                                        </label>
+                                        <div class="input-group input-group-lg">
+                                            <input asp-for="PriceSecondaire" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" />
+                                            <span class="input-group-text bg-success text-white fw-bold">MAD</span>
+                                        </div>
+                                        <span asp-validation-for="PriceSecondaire" class="text-danger small"></span>
+                                        <small class="text-muted d-block mt-1">Société secondaire (type Emballage)</small>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-md-6 mb-3">
+                                        <div class="alert alert-info mb-0">
+                                            <i class="ri-information-line me-1"></i>
+                                            <strong>Voyage de type "Empty"</strong><br />
+                                            Ce voyage n'a pas de société secondaire.
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Currency (Hidden - Fixed to MAD) -->
+                                <input type="hidden" asp-for="Currency" value="MAD" />
+                            </div>
+
+                            <div class="alert alert-warning mt-3 mb-0">
+                                <i class="ri-lightbulb-line me-1"></i>
+                                <strong>Note importante:</strong> Les prix sont facultatifs et peuvent être mis à jour ultérieurement à tout moment.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a asp-action="AssignVoyages" asp-route-bookingId="@Model.BookingId" class="btn btn-secondary btn-lg">
+                            <i class="ri-arrow-left-line me-1"></i> Retour
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="ri-save-line me-1"></i> Enregistrer les prix
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="card mt-3">
+            <div class="card-body bg-light-subtle">
+                <h6 class="fw-semibold mb-2"><i class="ri-question-line me-1"></i> Aide</h6>
+                <ul class="mb-0 small text-muted">
+                    <li>Les prix sont en <strong>Dirham Marocain (MAD)</strong></li>
+                    <li>Vous pouvez laisser les champs vides si les prix ne sont pas encore déterminés</li>
+                    <li>Le prix de la société principale est généralement le prix principal du transport</li>
+                    <li>Le prix de la société secondaire s'applique uniquement aux voyages de type <strong>"Emballage"</strong></li>
+                    <li>Les prix peuvent être modifiés à tout moment en retournant sur cette page</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,137 @@
+@model IEnumerable<GESTION_LTIPN.Models.Society>
+
+@{
+    ViewData["Title"] = "Gestion des Sociétés";
+    var filter = ViewBag.Filter as string;
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">Sociétés</h4>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="ri-add-line me-1"></i> Ajouter une société
+                </a>
+            </div>
+            <div class="card-body">
+                <!-- Filter Tabs -->
+                <ul class="nav nav-pills mb-3">
+                    <li class="nav-item">
+                        <a class="nav-link @(filter == "all" ? "active" : "")" asp-action="Index" asp-route-filter="all">
+                            Toutes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(filter == "active" ? "active" : "")" asp-action="Index" asp-route-filter="active">
+                            Actives
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(filter == "inactive" ? "active" : "")" asp-action="Index" asp-route-filter="inactive">
+                            Inactives
+                        </a>
+                    </li>
+                </ul>
+
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Ville</th>
+                                    <th>Téléphone</th>
+                                    <th>Email</th>
+                                    <th>Statut</th>
+                                    <th>Date de création</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var society in Model)
+                                {
+                                    <tr>
+                                        <td><strong>@society.SocietyName</strong></td>
+                                        <td>@(society.City ?? "-")</td>
+                                        <td>@(society.Phone ?? "-")</td>
+                                        <td>@(society.Email ?? "-")</td>
+                                        <td>
+                                            @if (society.IsActive)
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            }
+                                        </td>
+                                        <td>@society.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <a asp-action="Details" asp-route-id="@society.SocietyId" class="btn btn-sm btn-outline-primary" title="Détails">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@society.SocietyId" class="btn btn-sm btn-outline-warning" title="Modifier">
+                                                    <i class="ri-edit-line"></i>
+                                                </a>
+                                                <form asp-action="ToggleStatus" asp-route-id="@society.SocietyId" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    @if (society.IsActive)
+                                                    {
+                                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Désactiver">
+                                                            <i class="ri-toggle-line"></i>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Activer">
+                                                            <i class="ri-toggle-fill"></i>
+                                                        </button>
+                                                    }
+                                                </form>
+                                                <form asp-action="Delete" asp-route-id="@society.SocietyId" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer" onclick="return confirm('Voulez-vous vraiment supprimer cette société ?')">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="ri-building-line fs-1 text-muted d-block mb-2"></i>
+                        <p class="text-muted mb-3">Aucune société trouvée</p>
+                        <a asp-action="Create" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i> Créer la première société
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

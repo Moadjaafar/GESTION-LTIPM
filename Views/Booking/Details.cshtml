@@ -1,0 +1,370 @@
+@model GESTION_LTIPN.Models.Booking
+
+@{
+    ViewData["Title"] = "Détails de la réservation";
+}
+
+<div class="row">
+    <div class="col-12">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">Réservation @Model.BookingReference</h4>
+                <div class="d-flex gap-2">
+                    @if (Model.BookingStatus == "Pending")
+                    {
+                        <form asp-action="Delete" asp-route-id="@Model.BookingId" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ? Cette action est irréversible.')">
+                                <i class="ri-delete-bin-line me-1"></i> Supprimer
+                            </button>
+                        </form>
+                    }
+                    <a asp-action="Index" class="btn btn-secondary btn-sm">
+                        <i class="ri-arrow-left-line me-1"></i> Retour
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-50">Référence:</th>
+                                <td><strong class="text-primary">@Model.BookingReference</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Société:</th>
+                                <td>@Model.Society?.SocietyName</td>
+                            </tr>
+                            <tr>
+                                <th>Type de voyage:</th>
+                                <td>@Model.TypeVoyage</td>
+                            </tr>
+                            <tr>
+                                <th>Nombre de LTC:</th>
+                                <td><strong class="text-primary">@Model.Nbr_LTC</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Statut:</th>
+                                <td>
+                                    @switch (Model.BookingStatus)
+                                    {
+                                        case "Pending":
+                                            <span class="badge bg-warning">En attente</span>
+                                            break;
+                                        case "Validated":
+                                            <span class="badge bg-success">Validée</span>
+                                            break;
+                                        case "Completed":
+                                            <span class="badge bg-primary">Complétée</span>
+                                            break;
+                                        case "Cancelled":
+                                            <span class="badge bg-danger">Annulée</span>
+                                            break;
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-50">Créé le:</th>
+                                <td>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                            <tr>
+                                <th>Créé par:</th>
+                                <td>@Model.CreatedByUser?.Username</td>
+                            </tr>
+                            @if (Model.ValidatedAt.HasValue)
+                            {
+                                <tr>
+                                    <th>Validé le:</th>
+                                    <td>@Model.ValidatedAt.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
+                                <tr>
+                                    <th>Validé par:</th>
+                                    <td>@Model.ValidatedByUser?.Username</td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="fw-semibold">Notes:</h6>
+                            <p class="text-muted">@Model.Notes</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Voyages Section -->
+        @{
+            var isBookingAgent = User.IsInRole("Booking_Agent");
+        }
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="ri-route-line me-1"></i>
+                    Voyages associés (@Model.Voyages.Count / @Model.Nbr_LTC)
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Voyages != null && Model.Voyages.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>N° TC</th>
+                                    @if (!isBookingAgent)
+                                    {
+                                        <th>Société Principale</th>
+                                        <th>Société Secondaire</th>
+                                    }
+                                    <th>Ville Départ</th>
+                                    <th>Date Départ</th>
+                                    <th>Type</th>
+                                    <th>Camion</th>
+                                    <th>Statut</th>
+                                    @if (!isBookingAgent)
+                                    {
+                                        <th>Prix Principal</th>
+                                        <th>Prix Secondaire</th>
+                                    }
+                                    <th style="min-width: 235px;">Dates Clés</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var voyage in Model.Voyages.OrderBy(v => v.VoyageNumber))
+                                {
+                                    <tr>
+                                        <td><strong>@voyage.VoyageNumber</strong></td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(voyage.Numero_TC))
+                                            {
+                                                <span class="badge bg-info">@voyage.Numero_TC</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        @if (!isBookingAgent)
+                                        {
+                                            <td>@voyage.SocietyPrincipale?.SocietyName</td>
+                                            <td>@(voyage.SocietySecondaire?.SocietyName ?? "-")</td>
+                                        }
+                                        <td>@voyage.DepartureCity</td>
+                                        <td>
+                                            @if (voyage.DepartureDate.HasValue)
+                                            {
+                                                <span>@voyage.DepartureDate.Value.ToString("dd/MM/yyyy")</span>
+                                                if (voyage.DepartureTime.HasValue)
+                                                {
+                                                    <br />
+                                                    <small class="text-muted">@voyage.DepartureTime.Value.ToString(@"hh\:mm")</small>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (voyage.DepartureType == "Emballage")
+                                            {
+                                                <span class="badge bg-info">Emballage</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">Empty</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (voyage.CamionFirst != null || voyage.CamionSecond != null)
+                                            {
+                                                if (voyage.CamionFirst != null)
+                                                {
+                                                    <small class="d-block">1er: @voyage.CamionFirst.CamionMatricule</small>
+                                                }
+                                                if (voyage.CamionSecond != null)
+                                                {
+                                                    <small class="d-block">2ème: @voyage.CamionSecond.CamionMatricule</small>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <text>-</text>
+                                            }
+                                        </td>
+                                        <td>
+                                            @switch (voyage.VoyageStatus)
+                                            {
+                                                case "Planned":
+                                                    <span class="badge bg-secondary">Planifié</span>
+                                                    break;
+                                                case "InProgress":
+                                                    <span class="badge bg-primary">En cours</span>
+                                                    break;
+                                                case "Completed":
+                                                    <span class="badge bg-success">Complété</span>
+                                                    break;
+                                                case "Cancelled":
+                                                    <span class="badge bg-danger">Annulé</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        @if (!isBookingAgent)
+                                        {
+                                            <td>
+                                                @if (voyage.PricePrincipale.HasValue)
+                                                {
+                                                    <strong class="text-success">@voyage.PricePrincipale.Value.ToString("N2") MAD</strong>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (voyage.PriceSecondaire.HasValue)
+                                                {
+                                                    <strong class="text-success">@voyage.PriceSecondaire.Value.ToString("N2") MAD</strong>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        }
+                                        <td>
+                                            <small>
+                                                @if (voyage.ReceptionDate.HasValue)
+                                                {
+                                                    <div class="mb-1">
+                                                        <i class="ri-map-pin-line text-success"></i>
+                                                        <strong>Réception à Dakhla:</strong><br />
+                                                        <span class="text-muted ms-3">@voyage.ReceptionDate.Value.ToString("dd/MM/yyyy")</span>
+                                                        @if (voyage.ReceptionTime.HasValue)
+                                                        {
+                                                            <span class="text-muted">à @voyage.ReceptionTime.Value.ToString(@"hh\:mm")</span>
+                                                        }
+                                                    </div>
+                                                }
+                                                @if (voyage.ReturnDepartureDate.HasValue)
+                                                {
+                                                    <div class="mb-1">
+                                                        <i class="ri-arrow-go-back-line text-info"></i>
+                                                        <strong>Départ retour de Dakhla:</strong><br />
+                                                        <span class="text-muted ms-3">@voyage.ReturnDepartureDate.Value.ToString("dd/MM/yyyy")</span>
+                                                        @if (voyage.ReturnDepartureTime.HasValue)
+                                                        {
+                                                            <span class="text-muted">à @voyage.ReturnDepartureTime.Value.ToString(@"hh\:mm")</span>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(voyage.ReturnArrivalCity))
+                                                        {
+                                                            <span class="text-muted">→ @voyage.ReturnArrivalCity</span>
+                                                        }
+                                                    </div>
+                                                }
+                                                @if (voyage.ReturnArrivalDate.HasValue)
+                                                {
+                                                    <div class="mb-1">
+                                                        <i class="ri-check-double-line text-success"></i>
+                                                        <strong>Arrivée finale@(voyage.ReturnArrivalCity != null ? $" à {voyage.ReturnArrivalCity}" : ""):</strong><br />
+                                                        <span class="text-muted ms-3">@voyage.ReturnArrivalDate.Value.ToString("dd/MM/yyyy")</span>
+                                                        @if (voyage.ReturnArrivalTime.HasValue)
+                                                        {
+                                                            <span class="text-muted">à @voyage.ReturnArrivalTime.Value.ToString(@"hh\:mm")</span>
+                                                        }
+                                                    </div>
+                                                }
+                                                @if (!voyage.ReceptionDate.HasValue && !voyage.ReturnDepartureDate.HasValue && !voyage.ReturnArrivalDate.HasValue)
+                                                {
+                                                    <span class="text-muted">Aucune date enregistrée</span>
+                                                }
+                                            </small>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Summary Stats -->
+                    <div class="row mt-4">
+                        <div class="@(isBookingAgent ? "col-md-4" : "col-md-3")">
+                            <div class="card bg-light border-0">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-1">Total Voyages</h6>
+                                    <h3 class="mb-0">@Model.Voyages.Count</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="@(isBookingAgent ? "col-md-4" : "col-md-3")">
+                            <div class="card bg-success-subtle border-0">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-1">Complétés</h6>
+                                    <h3 class="mb-0 text-success">@Model.Voyages.Count(v => v.VoyageStatus == "Completed")</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="@(isBookingAgent ? "col-md-4" : "col-md-3")">
+                            <div class="card bg-primary-subtle border-0">
+                                <div class="card-body text-center">
+                                    <h6 class="text-muted mb-1">En cours</h6>
+                                    <h3 class="mb-0 text-primary">@Model.Voyages.Count(v => v.VoyageStatus == "InProgress")</h3>
+                                </div>
+                            </div>
+                        </div>
+                        @if (!isBookingAgent)
+                        {
+                            <div class="col-md-3">
+                                <div class="card bg-warning-subtle border-0">
+                                    <div class="card-body text-center">
+                                        <h6 class="text-muted mb-1">Avec Prix</h6>
+                                        <h3 class="mb-0 text-warning">@Model.Voyages.Count(v => v.PricePrincipale.HasValue)</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="ri-route-line fs-1 text-muted d-block mb-2"></i>
+                        <p class="text-muted mb-0">Aucun voyage créé pour cette réservation</p>
+                        @if (Model.BookingStatus == "Validated")
+                        {
+                            <small class="text-muted">Les voyages peuvent être créés par l'équipe de transport.</small>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

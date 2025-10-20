@@ -1,0 +1,762 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - LTIPM</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta content="Admin & Dashboards Template" name="description" />
+    <meta content="Pixeleyez" name="author" />
+
+    <!-- layout setup -->
+    <script type="module" src="~/assets/js/layout-setup.js"></script>
+
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="~/assets/images/favicon.png">
+    <link rel="stylesheet" href="~/assets/libs/gridjs/theme/mermaid.min.css">
+    <!-- Simplebar Css -->
+    <link rel="stylesheet" href="~/assets/libs/simplebar/simplebar.min.css">
+    <!-- Swiper Css -->
+    <link href="~/assets/libs/swiper/swiper-bundle.min.css" rel="stylesheet">
+    <!-- Nouislider Css -->
+    <link href="~/assets/libs/nouislider/nouislider.min.css" rel="stylesheet">
+    <!-- Bootstrap Css -->
+    <link href="~/assets/css/bootstrap.min.css" id="bootstrap-style" rel="stylesheet" type="text/css">
+    <!--icons css-->
+    <link href="~/assets/css/icons.min.css" rel="stylesheet" type="text/css">
+    <!-- App Css-->
+    <link href="~/assets/css/app.min.css" id="app-style" rel="stylesheet" type="text/css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Begin page -->
+    <div id="layout-wrapper">
+
+        <!-- Begin Header -->
+        <header class="app-header" id="appHeader">
+            <div class="container-fluid w-100">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-inline-flex align-items-center gap-2">
+                        <a href="index.html" class="align-items-end logo-main d-none me-5">
+                            <img height="35" class="logo-dark" alt="Dark Logo" src="~/assets/images/favicon.png" style="background-color: white;border: 1px white;border-radius: 5px;">
+                            <h3 class="text-body-emphasis fw-bolder mb-0 ms-1">LTIPM</h3>
+                        </a>
+                        <button type="button" class="vertical-toggle btn header-btn" id="toggleSidebar" aria-label="Toggle Sidebar">
+                            <i class="bi bi-arrow-bar-left header-icon"></i>
+                        </button>
+                        <button type="button" class="horizontal-toggle btn header-btn d-none" id="toggleHorizontal" aria-label="Toggle Menu">
+                            <i class="ri-menu-2-line header-icon"></i>
+                        </button>
+
+                    </div>
+                    <div class="flex-shrink-0 d-flex align-items-center gap-4">
+                        <div class="d-flex gap-2 align-items-center">
+                            <button class="btn header-btn d-block d-md-none" type="button" data-bs-toggle="modal" data-bs-target="#searchModal">
+                                <i class="ri-search-line"></i>
+                            </button>
+                            <button class="btn header-btn d-none d-md-block" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" aria-label="Settings">
+                                <i class="bi bi-gear"></i>
+                            </button>
+                        </div>
+                        <div class="dark-mode-btn" id="toggleMode">
+                            <button class="btn header-btn active" id="lightModeBtn" type="button" aria-label="Switch to light mode">
+                                <i class="bi bi-brightness-high"></i>
+                            </button>
+                            <button class="btn header-btn" id="darkModeBtn" type="button" aria-label="Switch to Dark mode">
+                                <i class="bi bi-moon-stars"></i>
+                            </button>
+                        </div>
+                        <div class="dropdown pe-dropdown-mega d-none d-md-block">
+                            <button class="header-profile-btn btn gap-1 text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="d-block pe-2">
+                                    <span class="d-block mb-0 fs-12 fw-semibold">@User.Identity?.Name</span>
+                                </div>
+
+                            </button>
+                            <div class="dropdown-menu dropdown-mega-sm header-dropdown-menu p-3">
+                                <div class="border-bottom pb-2 mb-2 d-flex align-items-center gap-2">
+                                    <div>
+                                        <a href="javascript:void(0)">
+                                            <h6 class="mb-0 lh-base">@User.Identity?.Name</h6>
+                                        </a>
+                                        @if (User.HasClaim(c => c.Type == "SocietyName"))
+                                        {
+                                            <small class="text-muted">@User.FindFirst("SocietyName")?.Value</small>
+                                        }
+                                    </div>
+                                </div>
+                                <ul class="list-unstyled mb-0">
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item border-0 bg-transparent text-start w-100">
+                                                <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <aside class="pe-app-sidebar" id="sidebar">
+            <div class="pe-app-sidebar-logo px-5 d-flex align-items-center position-relative">
+                <!--begin::Brand Image-->
+                <a href="index.html" class="d-flex align-items-end logo-main">
+                    <img height="35" class="logo-dark" alt="Dark Logo" src="~/assets/images/favicon.png">
+                    <img height="35" class="logo-light" alt="Light Logo" src="~/assets/images/favicon.png">
+                    <h3 class="text-body-emphasis fw-bolder mb-1 ms-1 logo-txt">LTIPM</h3>
+                </a>
+                <button type="button" id="sidebarDefaultArrow" class="btn btn-sm p-0 fs-16 text-body-emphasis ms-auto float-end d-none icon-hover-btn d-none"><i class="ri-arrow-right-line fs-5"></i></button>
+                <!--end::Brand Image-->
+            </div>
+            <nav class="pe-app-sidebar-menu nav nav-pills" data-simplebar id="sidebar-simplebar">
+                <div class="d-flex align-items-start flex-column w-100">
+                    <ul class="pe-main-menu list-unstyled">
+                        <!-- Main Menu -->
+                        <li class="pe-menu-title">Main</li>
+
+                        <!-- Dashboard -->
+                        <li class="pe-slide  pe-has-sub">
+                            <a asp-controller="Home" asp-action="Index" class="pe-nav-link">
+                                <i class="ri-dashboard-line pe-nav-icon"></i>
+                                <span class="pe-nav-content">Tableau de bord</span>
+                            </a>
+                        </li>
+
+                        <!-- Réservations -->
+                        <li class="pe-slide  pe-has-sub">
+                            <a asp-controller="Booking" asp-action="Index" class="pe-nav-link">
+                                <i class="ri-calendar-check-line pe-nav-icon"></i>
+                                <span class="pe-nav-content">Réservations</span>
+                            </a>
+                        </li>
+
+                        <!-- Validation & Voyages (Trans_Respo only) -->
+                        @if (User.IsInRole("Admin") || User.IsInRole("Trans_Respo"))
+                        {
+                            <li class="pe-slide pe-has-sub">
+                                <a asp-controller="Voyage" asp-action="Index" class="pe-nav-link">
+                                    <i class="ri-route-line pe-nav-icon"></i>
+                                    <span class="pe-nav-content">Validation & Voyages</span>
+                                </a>
+                            </li>
+                        }
+
+                        <!-- Administration (Admin only) -->
+                        @if (User.IsInRole("Admin"))
+                        {
+
+                            <li class="pe-slide pe-has-sub">
+                                <a asp-controller="User" asp-action="Index" class="pe-nav-link">
+                                    <i class="ri-user-line"></i>
+                                    <span class="pe-nav-content">Utilisateurs</span>
+                                </a>
+                            </li>
+
+                            <li class="pe-slide pe-has-sub">
+                                <a asp-controller="Society" asp-action="Index" class="pe-nav-link">
+                                    <i class="ri-building-line"></i>
+                                    <span class="pe-nav-content">Sociétés</span>
+                                </a>
+                            </li>
+
+                            <li class="pe-slide pe-has-sub">
+                                <a asp-controller="Camion" asp-action="Index" class="pe-nav-link">
+                                    <i class="ri-truck-line"></i>
+                                    <span class="pe-nav-content">Camions</span>
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+
+                </div>
+            </nav>
+        </aside>        <aside class="pe-app-sidebar horizontal-sidebar" id="horizontal-aside">
+            <!-- data-simplebar id="sidebar-simplebar" -->
+            <nav class="pe-app-sidebar-menu nav nav-pills">
+                <ul class="pe-horizontal-menu mb-0 list-unstyled" id="horizontal-menu">
+                    <!-- Main Menu -->
+                    <!-- Main Menu -->
+                    <li class="pe-menu-title">Main</li>
+
+                    <!-- Dashboard -->
+                    <li class="pe-slide pe-has-sub">
+                        <a asp-controller="Home" asp-action="Index" class="pe-nav-link">
+                            <i class="ri-dashboard-line pe-nav-icon"></i>
+                            <span class="pe-nav-content">Tableau de bord</span>
+                        </a>
+                    </li>
+
+                    <!-- Réservations -->
+                    <li class="pe-slide pe-has-sub">
+                        <a asp-controller="Booking" asp-action="Index" class="pe-nav-link">
+                            <i class="ri-calendar-check-line pe-nav-icon"></i>
+                            <span class="pe-nav-content">Réservations</span>
+                        </a>
+                    </li>
+
+                    <!-- Validation & Voyages (Trans_Respo only) -->
+                    @if (User.IsInRole("Admin") || User.IsInRole("Trans_Respo"))
+                    {
+                        <li class="pe-slide pe-has-sub">
+                            <a asp-controller="Voyage" asp-action="Index" class="pe-nav-link">
+                                <i class="ri-route-line pe-nav-icon"></i>
+                                <span class="pe-nav-content">Validation & Voyages</span>
+                            </a>
+                        </li>
+                    }
+
+                    <!-- Administration (Admin only) -->
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="pe-slide pe-has-sub">
+                            <a asp-controller="User" asp-action="Index" class="pe-nav-link">
+                                <i class="ri-user-line"></i>
+                                <span class="pe-nav-content">Utilisateurs</span>
+                            </a>
+                        </li>
+
+                        <li class="pe-slide pe-has-sub">
+                            <a asp-controller="Society" asp-action="Index" class="pe-nav-link">
+                                <i class="ri-building-line"></i>
+                                <span class="pe-nav-content">Sociétés</span>
+                            </a>
+                        </li>
+
+                        <li class="pe-slide pe-has-sub">
+                            <a asp-controller="Camion" asp-action="Index" class="pe-nav-link">
+                                <i class="ri-truck-line"></i>
+                                <span class="pe-nav-content">Camions</span>
+                            </a>
+                        </li>
+
+                    }
+
+                </ul>
+            </nav>
+        </aside>
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+        <main class="app-wrapper pt-3">
+            <div class="container-fluid maincnt  mt-3">
+                @RenderBody()
+            </div>
+
+            <!-- Submit Section -->
+        </main>
+
+        <div class="offcanvas offcanvas-end border-0 data-theme-colors layout-customizer" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+            <div class="flex-wrap align-items-center bg-primary bg-gradient p-5 offcanvas-header">
+                <p class="m-0 text-white fw-semibold fs-16" id="offcanvasRightLabel">Theme Customization</p>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body p-0">
+                <div data-simplebar class="h-100">
+                    <div class="p-6">
+                        <h6 class="mb-5 fw-semibold">Layout:</h6>
+                        <div class="row gy-3">
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="customizer-layout01" name="data-layout" type="radio" value="vertical" class="form-check-input" checked>
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="customizer-layout01">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2 rounded-2"></span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Vertical</h5>
+                            </div>
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="customizer-layout02" name="data-layout" type="radio" value="horizontal" class="form-check-input">
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="customizer-layout02">
+                                        <span class="d-flex h-100 flex-column">
+                                            <span class="bg-light-subtle d-flex py-1 px-3 gap-1 align-items-center">
+                                                <span class="d-block p-1 bg-light rounded me-1"></span>
+                                                <span class="d-block p-1 pb-0 px-2 bg-light ms-auto"></span>
+                                                <span class="d-block p-1 pb-0 px-2 bg-light"></span>
+                                            </span>
+                                            <span class="bg-light-subtle d-flex gap-1 pt-1 pb-4 px-3 border-primary-subtle border-top">
+                                                <span class="d-block p-1 pb-0 px-2 bg-light"></span>
+                                                <span class="d-block p-1 pb-0 px-2 bg-light"></span>
+                                                <span class="d-block p-1 pb-0 px-2 bg-light"></span>
+                                            </span>
+                                            <span class="d-block h-100 bg-primary-subtle mx-3 mb-2 mt-n3 rounded-2"> </span>
+                                            <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Horizontal</h5>
+                            </div>
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="customizer-layout03" name="data-layout" type="radio" value="semibox" class="form-check-input">
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="customizer-layout03">
+                                        <span class="d-flex gap-1 h-100 p-1">
+                                            <span class="flex-shrink-0 mb-3">
+                                                <span class="d-block p-1 px-1 bg-light rounded mb-1 mx-1"></span>
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle my-2 mx-1 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Semi Box</h5>
+                            </div>
+                            <!-- end col -->
+                        </div>
+
+                        <h6 class="my-5 fw-semibold">Content Width:</h6>
+
+                        <div class="row gy-3">
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="defaultContent" name="data-content-width" type="radio" value="default" class="form-check-input" checked>
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="defaultContent">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Default</h5>
+                            </div>
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="boxLayout" name="data-content-width" type="radio" value="box" class="form-check-input">
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="boxLayout">
+                                        <span class="d-flex h-100 px-3">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-2 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Box</h5>
+                            </div>
+                            <!-- end col -->
+                        </div>
+
+                        <h6 class="my-5 fw-semibold">Layout Direction:</h6>
+
+                        <div class="row gy-3">
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="ltrMode" name="dir" type="radio" value="ltr" class="form-check-input" checked>
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="ltrMode">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0 order-1">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">LTR</h5>
+                            </div>
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="rtlMode" name="dir" type="radio" value="rtl" class="form-check-input">
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="rtlMode">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">RTL</h5>
+                            </div>
+                            <!-- end col -->
+                        </div>
+
+                        <h6 class="my-5 fw-semibold">Layout Mode:</h6>
+
+                        <div class="row gy-3">
+                            <div class="col-6">
+                                <div>
+                                    <input id="layout-light" name="data-bs-theme" type="radio" value="light" class="form-check-input" checked>
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="layout-light">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Light</h5>
+                            </div>
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="layout-dark" name="data-bs-theme" type="radio" value="dark" class="form-check-input">
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2 bg-dark" for="layout-dark">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-white bg-opacity-10 d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 bg-white bg-opacity-10 rounded mb-2"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-white bg-opacity-10"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-white bg-opacity-10"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-white bg-opacity-10"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-white bg-opacity-10 d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-light bg-opacity-10 m-3 rounded-2"> </span>
+                                                    <span class="bg-white bg-opacity-10 d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Dark</h5>
+                            </div>
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="automode" name="data-bs-theme" type="radio" value="auto" class="form-check-input">
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="automode">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">System</h5>
+                            </div>
+                            <!-- end col -->
+                        </div>
+
+                        <h6 class="my-5 fw-semibold">Sidebar Size:</h6>
+
+                        <div class="row gy-3">
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="sidebar-default" name="data-sidebar" type="radio" value="default" class="form-check-input" checked>
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="sidebar-default">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Default</h5>
+                            </div>
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="sidebar-medium" name="data-sidebar" type="radio" value="medium" class="form-check-input" checked>
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="sidebar-medium">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Medium</h5>
+                            </div>
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="sidebar-icon" name="data-sidebar" type="radio" value="icon" class="form-check-input">
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="sidebar-icon">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-1">
+                                                    <span class="d-block p-1 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Icon</h5>
+                            </div>
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="sidebar-icon-hover" name="data-sidebar" type="radio" value="icon-hover" class="form-check-input">
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="sidebar-icon-hover">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-1">
+                                                    <span class="d-block p-1 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Icon hover</h5>
+                            </div>
+                            <!-- end col -->
+                        </div>
+
+                        <h6 class="my-5 fw-semibold">Sidebar Color:</h6>
+
+                        <div class="row gy-3">
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="sidebar-light" name="data-sidebar-color" type="radio" value="light" class="form-check-input" checked>
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="sidebar-light">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-light-subtle d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 bg-light rounded mb-2"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Light</h5>
+                            </div>
+                            <div class="col-6">
+                                <div class="border overflow-hidden rounded-2">
+                                    <input id="sidebar-dark" name="data-sidebar-color" type="radio" value="dark" class="form-check-input">
+                                    <label class="form-check-label p-0 avatar-3xl w-100 rounded-2" for="sidebar-dark">
+                                        <span class="d-flex h-100">
+                                            <span class="flex-shrink-0">
+                                                <span class="bg-primary d-flex h-100 flex-column gap-1 p-2">
+                                                    <span class="d-block p-1 px-2 bg-light-subtle opacity-25 rounded mb-2"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light-subtle opacity-25"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light-subtle opacity-25"></span>
+                                                    <span class="d-block p-1 px-2 pb-0 bg-light-subtle opacity-25"></span>
+                                                </span>
+                                            </span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex h-100 flex-column">
+                                                    <span class="bg-light-subtle d-block p-1"></span>
+                                                    <span class="d-block h-100 bg-primary-subtle m-3 rounded-2"> </span>
+                                                    <span class="bg-light-subtle d-block p-1 mt-auto"></span>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <h5 class="fs-13 text-center mt-2">Dark</h5>
+                            </div>
+                            <!-- end col -->
+                        </div>
+                        <div id="sidebar-color" class="my-5">
+                            <h6 class="mb-0 fw-semibold">Primary Color</h6>
+                            <p class="text-muted">Choose a color of Primary.</p>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="form-check sidebar-setting card-radio">
+                                    <input class="form-check-input" type="radio" name="data-theme-colors" id="themeColor-01" value="default" checked>
+                                    <label class="form-check-label avatar-md rounded" for="themeColor-01"></label>
+                                </div>
+                                <div class="form-check sidebar-setting card-radio">
+                                    <input class="form-check-input" type="radio" name="data-theme-colors" id="themeColor-02" value="cyan">
+                                    <label class="form-check-label avatar-md rounded" for="themeColor-02"></label>
+                                </div>
+                                <div class="form-check sidebar-setting card-radio">
+                                    <input class="form-check-input" type="radio" name="data-theme-colors" id="themeColor-03" value="blue">
+                                    <label class="form-check-label avatar-md rounded" for="themeColor-03"></label>
+                                </div>
+                                <div class="form-check sidebar-setting card-radio">
+                                    <input class="form-check-input" type="radio" name="data-theme-colors" id="themeColor-04" value="purple">
+                                    <label class="form-check-label avatar-md rounded" for="themeColor-04"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-end gap-2 modal-footer pt-6 border-top">
+                            <button type="button" class="btn btn-light" id="resetBtn">
+                                <i class="ri-reset-right-line"></i> Reset Layouts
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>        <!-- Begin scroll top -->
+        <div class="progress-wrap d-flex align-items-center justify-content-center cursor-pointer h-40px w-40px position-fixed" id="progress-scroll">
+            <svg class="progress-circle w-100 h-100 position-absolute" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" class="progress" />
+            </svg>
+            <i class="ri-arrow-up-line fs-16 z-1 position-relative text-primary"></i>
+        </div>
+        <!-- END scroll top -->        <!-- Begin Footer -->
+        <footer class="footer">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-center align-items-center gap-2">
+                    © KING PELAGIQUE GROUP.
+                </div>
+            </div>
+        </footer>
+        <!-- END Footer -->
+    </div>
+    <!-- END page -->
+    <!-- JAVASCRIPT -->
+    <script src="~/assets/libs/swiper/swiper-bundle.min.js"></script>
+    <script src="~/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/assets/libs/simplebar/simplebar.min.js"></script>
+    <script src="~/assets/js/scroll-top.init.js"></script>
+    <script src="~/assets/libs/gridjs/gridjs.umd.js" type="text/javascript"></script>
+
+    <script src="~/assets/libs/apexcharts/apexcharts.min.js"></script>
+    <!-- File js -->
+    <script src="~/assets/js/dashboard/e-commerce.init.js"></script>
+    <!-- App js -->
+    <script type="module" src="~/assets/js/app.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+
+</html>
+
+

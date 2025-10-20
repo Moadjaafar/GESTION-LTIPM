@@ -1,0 +1,134 @@
+@model GESTION_LTIPN.Models.VoyageViewModel
+
+@{
+    ViewData["Title"] = "Créer un Voyage";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Créer un nouveau voyage - @Model.BookingReference</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <input type="hidden" asp-for="BookingId" />
+                    <input type="hidden" asp-for="VoyageNumber" />
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                        </div>
+                    }
+
+                    <div class="alert alert-info">
+                        <i class="ri-information-line me-1"></i>
+                        Voyage numéro <strong>@Model.VoyageNumber</strong>
+                    </div>
+
+                    <!-- Numero TC -->
+                    <div class="mb-4">
+                        <label asp-for="Numero_TC" class="form-label">Numéro TC</label>
+                        <input asp-for="Numero_TC" class="form-control" placeholder="Entrez le numéro TC" />
+                        <span asp-validation-for="Numero_TC" class="text-danger"></span>
+                        <small class="text-muted">Numéro d'identification du transport</small>
+                    </div>
+
+                    <!-- Society Principale (Read-only from booking) -->
+                    <div class="mb-4">
+                        <label class="form-label">Société principale</label>
+                        <input type="text" class="form-control" value="@Model.SocietyPrincipaleName" readonly disabled />
+                        <input type="hidden" asp-for="SocietyPrincipaleId" />
+                        <small class="text-muted">Société de la réservation</small>
+                    </div>
+
+                    <!-- Type de départ - Must be selected first -->
+                    <div class="mb-4">
+                        <label asp-for="DepartureType" class="form-label">Type de départ <span class="text-danger">*</span></label>
+                        <select asp-for="DepartureType" class="form-select" id="departureType" required>
+                            <option value="">-- Sélectionnez un type --</option>
+                            @if (Model.DepartureTypes != null)
+                            {
+                                @foreach (var type in Model.DepartureTypes)
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="DepartureType" class="text-danger"></span>
+                    </div>
+
+                    <!-- Society Secondaire (Only visible if Emballage) -->
+                    <div class="mb-4" id="societySecondaireContainer" style="display: none;">
+                        <label asp-for="SocietySecondaireId" class="form-label">
+                            Société secondaire <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="SocietySecondaireId" class="form-select" id="societySecondaire">
+                            <option value="">-- Sélectionnez une société --</option>
+                            @if (Model.Societies != null)
+                            {
+                                @foreach (var society in Model.Societies)
+                                {
+                                    <option value="@society.SocietyId">@society.SocietyName</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="SocietySecondaireId" class="text-danger"></span>
+                    </div>
+
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a asp-action="AssignVoyages" asp-route-bookingId="@Model.BookingId" class="btn btn-secondary">
+                            <i class="ri-arrow-left-line me-1"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ri-save-line me-1"></i> Créer le voyage
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body bg-light-subtle">
+                <h6 class="fw-semibold mb-2"><i class="ri-information-line me-1"></i> Règles métier</h6>
+                <ul class="mb-0 small text-muted">
+                    <li>La <strong>société principale</strong> est automatiquement celle de la réservation</li>
+                    <li>Si <strong>Type = Emballage</strong> : La société secondaire est obligatoire</li>
+                    <li>Si <strong>Type = Empty</strong> : Pas de société secondaire</li>
+                    <li>Les <strong>camions</strong> seront assignés lors des départs (1er et 2ème)</li>
+                    <li>La <strong>ville et date de départ</strong> seront saisies au moment du départ réel</li>
+                    <li>La destination finale est toujours <strong>Dakhla</strong></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Show/hide Society Secondaire based on Departure Type
+        const departureTypeSelect = document.getElementById('departureType');
+        const checkDepartureType = function() {
+            const container = document.getElementById('societySecondaireContainer');
+            const societySecondaire = document.getElementById('societySecondaire');
+
+            if (departureTypeSelect.value === 'Emballage') {
+                // Show and make required
+                container.style.display = 'block';
+                societySecondaire.required = true;
+            } else {
+                // Hide and clear
+                container.style.display = 'none';
+                societySecondaire.required = false;
+                societySecondaire.value = '';
+            }
+        };
+
+        departureTypeSelect.addEventListener('change', checkDepartureType);
+        // Check on page load (for validation errors)
+        checkDepartureType();
+    </script>
+}

@@ -1,0 +1,112 @@
+@model GESTION_LTIPN.Models.Camion
+
+@{
+    ViewData["Title"] = "Modifier un Camion";
+    var camionTypes = ViewBag.CamionTypes as List<string>;
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Modifier le camion - @Model.CamionMatricule</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="CamionId" />
+                    <input type="hidden" asp-for="CreatedAt" />
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                        </div>
+                    }
+
+                    <div class="mb-4">
+                        <label asp-for="CamionMatricule" class="form-label">Matricule <span class="text-danger">*</span></label>
+                        <input asp-for="CamionMatricule" class="form-control" required />
+                        <span asp-validation-for="CamionMatricule" class="text-danger"></span>
+                        <small class="text-muted">Exemple: ABC-1234-56</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="CamionType" class="form-label">Type de camion</label>
+                            <select asp-for="CamionType" class="form-select">
+                                <option value="">-- Sélectionnez un type --</option>
+                                @if (camionTypes != null)
+                                {
+                                    @foreach (var type in camionTypes)
+                                    {
+                                        <option value="@type">
+                                            @switch (type)
+                                            {
+                                                case "INTERN":
+                                                    <text>Interne</text>
+                                                    break;
+                                                case "EXTERN":
+                                                    <text>Externe</text>
+                                                    break;
+                                                default:
+                                                    @type
+                                                    break;
+                                            }
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="CamionType" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="SocietyTranspId" class="form-label">Société de Transport</label>
+                            <select asp-for="SocietyTranspId" class="form-select" asp-items="ViewBag.SocietiesTransp">
+                                <option value="">-- Non assigné --</option>
+                            </select>
+                            <span asp-validation-for="SocietyTranspId" class="text-danger"></span>
+                            <small class="text-muted">Société de transport propriétaire du camion</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="DriverName" class="form-label">Nom du chauffeur</label>
+                            <input asp-for="DriverName" class="form-control" />
+                            <span asp-validation-for="DriverName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="DriverPhone" class="form-label">Téléphone du chauffeur</label>
+                            <input asp-for="DriverPhone" class="form-control" type="tel" />
+                            <span asp-validation-for="DriverPhone" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="form-check-label">
+                                Camion actif
+                            </label>
+                        </div>
+                        <small class="text-muted">Les camions inactifs ne seront pas disponibles pour les nouveaux voyages</small>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="ri-arrow-left-line me-1"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="ri-save-line me-1"></i> Mettre à jour
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

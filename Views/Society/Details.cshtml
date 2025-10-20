@@ -1,0 +1,160 @@
+@model GESTION_LTIPN.Models.Society
+
+@{
+    ViewData["Title"] = "Détails de la Société";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">@Model.SocietyName</h4>
+                <div class="d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.SocietyId" class="btn btn-warning btn-sm">
+                        <i class="ri-edit-line me-1"></i> Modifier
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary btn-sm">
+                        <i class="ri-arrow-left-line me-1"></i> Retour
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-md-6">
+                        <h6 class="fw-semibold mb-3">Informations Générales</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-40">Nom:</th>
+                                <td><strong>@Model.SocietyName</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Ville:</th>
+                                <td>@(Model.City ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th>Adresse:</th>
+                                <td>@(Model.Address ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th>Statut:</th>
+                                <td>
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-md-6">
+                        <h6 class="fw-semibold mb-3">Contact</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-40">Téléphone:</th>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(Model.Phone))
+                                    {
+                                        <a href="tel:@Model.Phone">@Model.Phone</a>
+                                    }
+                                    else
+                                    {
+                                        <text>-</text>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(Model.Email))
+                                    {
+                                        <a href="mailto:@Model.Email">@Model.Email</a>
+                                    }
+                                    else
+                                    {
+                                        <text>-</text>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+
+                        <h6 class="fw-semibold mb-3 mt-4">Dates</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-40">Créée le:</th>
+                                <td>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                            <tr>
+                                <th>Mise à jour:</th>
+                                <td>@Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Associated Users -->
+                @if (Model.Users != null && Model.Users.Any())
+                {
+                    <hr class="my-4" />
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="fw-semibold mb-3">Utilisateurs associés (@Model.Users.Count)</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Nom d'utilisateur</th>
+                                            <th>Rôle</th>
+                                            <th>Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var user in Model.Users)
+                                        {
+                                            <tr>
+                                                <td>@user.Username</td>
+                                                <td>
+                                                    @switch (user.Role)
+                                                    {
+                                                        case "Admin":
+                                                            <span class="badge bg-danger">Admin</span>
+                                                            break;
+                                                        case "Booking_Agent":
+                                                            <span class="badge bg-primary">Agent Réservation</span>
+                                                            break;
+                                                        case "Trans_Respo":
+                                                            <span class="badge bg-info">Responsable Transport</span>
+                                                            break;
+                                                        default:
+                                                            <span class="badge bg-secondary">@user.Role</span>
+                                                            break;
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (user.IsActive)
+                                                    {
+                                                        <span class="badge bg-success">Actif</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">Inactif</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

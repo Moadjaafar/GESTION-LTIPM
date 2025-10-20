@@ -1,0 +1,181 @@
+@model GESTION_LTIPN.Models.VoyageViewModel
+
+@{
+    ViewData["Title"] = "Départ du Voyage";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Enregistrer le départ - @Model.BookingReference</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Depart" method="post">
+                    <input type="hidden" asp-for="VoyageId" />
+                    <input type="hidden" asp-for="BookingId" />
+                    <input type="hidden" asp-for="VoyageNumber" />
+                    <input type="hidden" asp-for="DepartureType" />
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                        </div>
+                    }
+
+                    <div class="alert alert-info">
+                        <i class="ri-information-line me-1"></i>
+                        Voyage numéro <strong>@Model.VoyageNumber</strong>
+                    </div>
+
+                    <!-- Read-only voyage information -->
+                    <div class="card mb-4 bg-light">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3">Informations du voyage</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted small">Société principale</label>
+                                    <p class="mb-0">@Model.SocietyPrincipaleName</p>
+                                </div>
+                                @if (!string.IsNullOrEmpty(Model.SocietySecondaireName))
+                                {
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-muted small">Société secondaire</label>
+                                        <p class="mb-0">@Model.SocietySecondaireName</p>
+                                    </div>
+                                }
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted small">Type de départ</label>
+                                    <p class="mb-0">
+                                        @if (Model.DepartureType == "Emballage")
+                                        {
+                                            <span class="badge bg-info">Emballage</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Empty</span>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Departure Information -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="DepartureCity" class="form-label">Ville de départ <span class="text-danger">*</span></label>
+                            <select asp-for="DepartureCity" asp-items="@(new SelectList(Model.DepartureCities))" class="form-select" required>
+                                <option value="">-- Sélectionner --</option>
+                            </select>
+                            <span asp-validation-for="DepartureCity" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="SocietyTranspFirstId" class="form-label">Société de transport <span class="text-danger">*</span></label>
+                            <select asp-for="SocietyTranspFirstId" asp-items="@(new SelectList(Model.SocietiesTransp, "SocietyTranspId", "SocietyTranspName"))" class="form-select" id="societyTranspFirst" required>
+                                <option value="">-- Sélectionner --</option>
+                            </select>
+                            <span asp-validation-for="SocietyTranspFirstId" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="CamionFirstDepart" class="form-label">Camion (1er départ) <span class="text-danger">*</span></label>
+                            <select asp-for="CamionFirstDepart" class="form-select" id="camionFirst" required disabled>
+                                <option value="">-- Sélectionner une société de transport d'abord --</option>
+                            </select>
+                            <span asp-validation-for="CamionFirstDepart" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Departure Date and Time -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="DepartureDate" class="form-label">Date de départ <span class="text-danger">*</span></label>
+                            <input asp-for="DepartureDate" class="form-control" type="date" required />
+                            <span asp-validation-for="DepartureDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="DepartureTime" class="form-label">Heure de départ</label>
+                            <input asp-for="DepartureTime" class="form-control" type="time" />
+                            <span asp-validation-for="DepartureTime" class="text-danger"></span>
+                            <small class="text-muted">Optionnel</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a asp-action="AssignVoyages" asp-route-bookingId="@Model.BookingId" class="btn btn-secondary">
+                            <i class="ri-arrow-left-line me-1"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="ri-plane-line me-1"></i> Enregistrer le départ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body bg-light-subtle">
+                <h6 class="fw-semibold mb-2"><i class="ri-information-line me-1"></i> Information</h6>
+                <ul class="mb-0 small text-muted">
+                    <li>Une fois le départ enregistré, le statut du voyage passera à <strong>"En cours"</strong></li>
+                    <li>La date de départ est obligatoire, l'heure est optionnelle</li>
+                    <li>Assurez-vous que toutes les informations du voyage sont correctes avant d'enregistrer le départ</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load camions when society transport is selected
+            const societyTranspSelect = document.getElementById('societyTranspFirst');
+            const camionSelect = document.getElementById('camionFirst');
+
+            societyTranspSelect.addEventListener('change', function() {
+                const societyTranspId = this.value;
+
+                // Clear and disable camion select
+                camionSelect.innerHTML = '<option value="">-- Chargement... --</option>';
+                camionSelect.disabled = true;
+
+                if (societyTranspId) {
+                    // Make AJAX request using fetch
+                    fetch('@Url.Action("GetCamionsBySociety", "Voyage")?societyTranspId=' + societyTranspId)
+                        .then(response => response.json())
+                        .then(data => {
+                            camionSelect.innerHTML = '<option value="">-- Sélectionner un camion --</option>';
+
+                            if (data.length > 0) {
+                                data.forEach(camion => {
+                                    const option = document.createElement('option');
+                                    option.value = camion.camionId;
+                                    let displayText = camion.camionMatricule;
+                                    if (camion.driverName) {
+                                        displayText += ' (' + camion.driverName + ')';
+                                    }
+                                    option.textContent = displayText;
+                                    camionSelect.appendChild(option);
+                                });
+                                camionSelect.disabled = false;
+                            } else {
+                                camionSelect.innerHTML = '<option value="">Aucun camion disponible</option>';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading camions:', error);
+                            camionSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                        });
+                } else {
+                    camionSelect.innerHTML = '<option value="">-- Sélectionner une société de transport d\'abord --</option>';
+                }
+            });
+        });
+    </script>
+}

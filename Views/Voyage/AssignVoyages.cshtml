@@ -1,0 +1,305 @@
+@model GESTION_LTIPN.Models.AssignVoyagesViewModel
+
+@{
+    ViewData["Title"] = "Gestion des Voyages";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <!-- Booking Info -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">Réservation @Model.Booking?.BookingReference</h4>
+                <a asp-action="Index" class="btn btn-secondary btn-sm">
+                    <i class="ri-arrow-left-line me-1"></i> Retour
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-50">Société:</th>
+                                <td>@Model.Booking?.Society?.SocietyName</td>
+                            </tr>
+                            <tr>
+                                <th>Type de voyage:</th>
+                                <td>@Model.Booking?.TypeVoyage</td>
+                            </tr>
+                            <tr>
+                                <th>Nombre de LTC:</th>
+                                <td><strong class="text-primary">@Model.Booking?.Nbr_LTC</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-50">Statut:</th>
+                                <td><span class="badge bg-success">Validée</span></td>
+                            </tr>
+                            <tr>
+                                <th>Voyages créés:</th>
+                                <td><strong>@Model.Voyages?.Count / @Model.Booking?.Nbr_LTC</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Restants:</th>
+                                <td>
+                                    @if (Model.RemainingVoyages > 0)
+                                    {
+                                        <span class="badge bg-warning">@Model.RemainingVoyages voyage(s) restant(s)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">Complet</span>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voyages List -->
+        <div class="card mt-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Voyages (@Model.Voyages?.Count)</h5>
+                @if (Model.CanAddVoyage)
+                {
+                    <a asp-action="Create" asp-route-bookingId="@Model.Booking?.BookingId" class="btn btn-primary btn-sm">
+                        <i class="ri-add-line me-1"></i> Ajouter un voyage
+                    </a>
+                }
+            </div>
+            <div class="card-body">
+                @if (Model.Voyages != null && Model.Voyages.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>N° TC</th>
+                                    <th>Société Principale</th>
+                                    <th>Société Secondaire</th>
+                                    <th>Ville de départ</th>
+                                    <th>Date de départ</th>
+                                    <th>Type</th>
+                                    <th>Camion</th>
+                                    <th>Statut</th>
+                                    <th>Prix</th>
+                                    <th>Progression</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var voyage in Model.Voyages)
+                                {
+                                    <tr>
+                                        <td><strong>@voyage.VoyageNumber</strong></td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(voyage.Numero_TC))
+                                            {
+                                                <span class="badge bg-info">@voyage.Numero_TC</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>@voyage.SocietyPrincipale?.SocietyName</td>
+                                        <td>@(voyage.SocietySecondaire?.SocietyName ?? "-")</td>
+                                        <td>@voyage.DepartureCity</td>
+                                        <td>
+                                            @if (voyage.DepartureDate.HasValue)
+                                            {
+                                                @voyage.DepartureDate.Value.ToString("dd/MM/yyyy")
+                                                if (voyage.DepartureTime.HasValue)
+                                                {
+                                                    <small class="text-muted">@voyage.DepartureTime.Value.ToString(@"hh\:mm")</small>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Non défini</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (voyage.DepartureType == "Emballage")
+                                            {
+                                                <span class="badge bg-info">Emballage</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Vide</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (voyage.CamionFirst != null || voyage.CamionSecond != null)
+                                            {
+                                                if (voyage.CamionFirst != null)
+                                                {
+                                                    <small class="d-block">1er: @voyage.CamionFirst.CamionMatricule</small>
+                                                }
+                                                if (voyage.CamionSecond != null)
+                                                {
+                                                    <small class="d-block">2ème: @voyage.CamionSecond.CamionMatricule</small>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Non assigné</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @switch (voyage.VoyageStatus)
+                                            {
+                                                case "Planned":
+                                                    <span class="badge bg-secondary">Planifié</span>
+                                                    break;
+                                                case "InProgress":
+                                                    <span class="badge bg-warning">En cours</span>
+                                                    break;
+                                                case "Completed":
+                                                    <span class="badge bg-success">Complété</span>
+                                                    break;
+                                                case "Cancelled":
+                                                    <span class="badge bg-danger">Annulé</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (voyage.PricePrincipale.HasValue || voyage.PriceSecondaire.HasValue)
+                                            {
+                                                <span class="badge bg-success" title="Prix assignés">
+                                                    <i class="ri-check-line"></i> Assignés
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary" title="Prix non définis">
+                                                    <i class="ri-close-line"></i> Non définis
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (voyage.VoyageStatus == "Planned")
+                                            {
+                                                <small class="text-muted">En attente de départ</small>
+                                            }
+                                            else if (voyage.VoyageStatus == "InProgress")
+                                            {
+                                                @if (!voyage.ReceptionDate.HasValue)
+                                                {
+                                                    <small><i class="ri-checkbox-blank-circle-line text-success"></i> Parti</small><br />
+                                                    <small class="text-muted">→ En route vers Dakhla</small>
+                                                }
+                                                else if (!voyage.ReturnDepartureDate.HasValue)
+                                                {
+                                                    <small><i class="ri-checkbox-circle-fill text-success"></i> Reçu à Dakhla</small><br />
+                                                    <small class="text-muted">→ En attente de retour</small>
+                                                }
+                                                else if (!voyage.ReturnArrivalDate.HasValue)
+                                                {
+                                                    <small><i class="ri-checkbox-circle-fill text-success"></i> Parti de Dakhla</small><br />
+                                                    <small class="text-muted">→ En route retour</small>
+                                                }
+                                            }
+                                            else if (voyage.VoyageStatus == "Completed")
+                                            {
+                                                <small class="text-success"><i class="ri-check-double-line"></i> Voyage complété</small>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <a asp-action="Details" asp-route-id="@voyage.VoyageId" class="btn btn-sm btn-outline-primary" title="Détails">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                                <a asp-action="AssignPrices" asp-route-id="@voyage.VoyageId" class="btn btn-sm btn-outline-success" title="Assigner les prix">
+                                                    <i class="ri-money-dollar-circle-line"></i>
+                                                </a>
+
+                                                @* Workflow-based actions *@
+                                                @if (voyage.VoyageStatus == "Planned")
+                                                {
+                                                    @* Step 1: Record departure *@
+                                                    <a asp-action="Depart" asp-route-id="@voyage.VoyageId" class="btn btn-sm btn-success" title="Enregistrer départ">
+                                                        <i class="ri-plane-line"></i> Départ
+                                                    </a>
+                                                    <form asp-action="Delete" asp-route-id="@voyage.VoyageId" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer" onclick="return confirm('Voulez-vous supprimer ce voyage ?')">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else if (voyage.VoyageStatus == "InProgress")
+                                                {
+                                                    @if (!voyage.ReceptionDate.HasValue)
+                                                    {
+                                                        @* Step 2: Record reception in Dakhla *@
+                                                        <a asp-action="Reception" asp-route-id="@voyage.VoyageId" class="btn btn-sm btn-info" title="Enregistrer réception à Dakhla">
+                                                            <i class="ri-map-pin-line"></i> Réception
+                                                        </a>
+                                                    }
+                                                    else if (!voyage.ReturnDepartureDate.HasValue)
+                                                    {
+                                                        @* Step 3: Record return departure from Dakhla *@
+                                                        <a asp-action="ReturnDepart" asp-route-id="@voyage.VoyageId" class="btn btn-sm btn-warning" title="Enregistrer départ retour">
+                                                            <i class="ri-arrow-go-back-line"></i> Départ Retour
+                                                        </a>
+                                                    }
+                                                    else if (!voyage.ReturnArrivalDate.HasValue)
+                                                    {
+                                                        @* Step 4: Record return arrival *@
+                                                        <a asp-action="ReturnArrival" asp-route-id="@voyage.VoyageId" class="btn btn-sm btn-success" title="Enregistrer arrivée retour">
+                                                            <i class="ri-check-double-line"></i> Arrivée
+                                                        </a>
+                                                    }
+                                                }
+                                                else if (voyage.VoyageStatus == "Completed")
+                                                {
+                                                    <span class="badge bg-success">Terminé</span>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="ri-route-line fs-1 text-muted d-block mb-2"></i>
+                        <p class="text-muted mb-3">Aucun voyage créé pour cette réservation</p>
+                        @if (Model.CanAddVoyage)
+                        {
+                            <a asp-action="Create" asp-route-bookingId="@Model.Booking?.BookingId" class="btn btn-primary">
+                                <i class="ri-add-line me-1"></i> Créer le premier voyage
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

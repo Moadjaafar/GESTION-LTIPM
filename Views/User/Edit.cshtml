@@ -1,0 +1,81 @@
+@model GESTION_LTIPN.Models.User
+
+@{
+    ViewData["Title"] = "Modifier un Utilisateur";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Modifier l'utilisateur - @Model.Username</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="UserId" />
+                    <input type="hidden" asp-for="Password" />
+                    <input type="hidden" asp-for="CreatedAt" />
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                        </div>
+                    }
+
+                    <div class="alert alert-info">
+                        <i class="ri-information-line me-1"></i>
+                        Pour modifier le mot de passe, utilisez la fonction "Réinitialiser le mot de passe" dans la page de détails.
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Username" class="form-label">Nom d'utilisateur <span class="text-danger">*</span></label>
+                        <input asp-for="Username" class="form-control" required />
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="Role" class="form-label">Rôle <span class="text-danger">*</span></label>
+                            <select asp-for="Role" class="form-select" asp-items="ViewBag.Roles" required>
+                                <option value="">-- Sélectionnez un rôle --</option>
+                            </select>
+                            <span asp-validation-for="Role" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="SocietyId" class="form-label">Société</label>
+                            <select asp-for="SocietyId" class="form-select" asp-items="ViewBag.Societies">
+                                <option value="">-- Non assigné --</option>
+                            </select>
+                            <span asp-validation-for="SocietyId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="form-check-label">
+                                Utilisateur actif
+                            </label>
+                        </div>
+                        <small class="text-muted">Les utilisateurs inactifs ne peuvent pas se connecter</small>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="ri-arrow-left-line me-1"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="ri-save-line me-1"></i> Mettre à jour
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

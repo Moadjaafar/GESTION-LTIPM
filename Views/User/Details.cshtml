@@ -1,0 +1,137 @@
+@model GESTION_LTIPN.Models.User
+
+@{
+    ViewData["Title"] = "Détails de l'Utilisateur";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">@Model.Username</h4>
+                <div class="d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.UserId" class="btn btn-warning btn-sm">
+                        <i class="ri-edit-line me-1"></i> Modifier
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary btn-sm">
+                        <i class="ri-arrow-left-line me-1"></i> Retour
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-md-6">
+                        <h6 class="fw-semibold mb-3">Informations Générales</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-40">Nom d'utilisateur:</th>
+                                <td><strong>@Model.Username</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Rôle:</th>
+                                <td>
+                                    @switch (Model.Role)
+                                    {
+                                        case "Admin":
+                                            <span class="badge bg-danger">Administrateur</span>
+                                            break;
+                                        case "Booking_Agent":
+                                            <span class="badge bg-primary">Agent de Réservation</span>
+                                            break;
+                                        case "Trans_Respo":
+                                            <span class="badge bg-info">Responsable Transport</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-secondary">@Model.Role</span>
+                                            break;
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Société:</th>
+                                <td>
+                                    @if (Model.Society != null)
+                                    {
+                                        <a asp-controller="Society" asp-action="Details" asp-route-id="@Model.SocietyId">
+                                            @Model.Society.SocietyName
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <text>-</text>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Statut:</th>
+                                <td>
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge bg-success">Actif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactif</span>
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-md-6">
+                        <h6 class="fw-semibold mb-3">Dates</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-40">Créé le:</th>
+                                <td>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                            <tr>
+                                <th>Dernière mise à jour:</th>
+                                <td>@Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        </table>
+
+                        <h6 class="fw-semibold mb-3 mt-4">Sécurité</h6>
+                        <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
+                            <i class="ri-lock-password-line me-1"></i> Réinitialiser le mot de passe
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="ResetPassword" asp-route-id="@Model.UserId" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resetPasswordModalLabel">Réinitialiser le mot de passe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="ri-alert-line me-1"></i>
+                        Vous êtes sur le point de réinitialiser le mot de passe de <strong>@Model.Username</strong>.
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Nouveau mot de passe <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword" required minlength="4" />
+                        <small class="text-muted">Minimum 4 caractères</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="ri-lock-password-line me-1"></i> Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
