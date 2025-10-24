@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="nul" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="wwwroot\assets\libs\cleave.js\.DS_Store" />
   </ItemGroup>
 

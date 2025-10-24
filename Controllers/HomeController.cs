@@ -1,9 +1,9 @@
-using System.Diagnostics;
 using GESTION_LTIPN.Data;
 using GESTION_LTIPN.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace GESTION_LTIPN.Controllers
 {
