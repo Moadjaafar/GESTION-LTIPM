@@ -49,6 +49,12 @@
                                 <td><strong class="text-primary">@Model.BookingReference</strong></td>
                             </tr>
                             <tr>
+                                <th>Numéro BK:</th>
+                                <td>
+                                    <span class="badge bg-info">@Model.Numero_BK</span>
+                                </td>
+                            </tr>
+                            <tr>
                                 <th>Société:</th>
                                 <td>@Model.Society?.SocietyName</td>
                             </tr>
@@ -147,6 +153,7 @@
                                     <th>Ville Départ</th>
                                     <th>Date Départ</th>
                                     <th>Type</th>
+                                    <th>Type Emballage</th>
                                     <th>Camion</th>
                                     <th>Statut</th>
                                     @if (!isBookingAgent)
@@ -201,6 +208,16 @@
                                             else
                                             {
                                                 <span class="badge bg-warning">Empty</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(voyage.Type_Emballage))
+                                            {
+                                                <span class="text-dark">@voyage.Type_Emballage</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
                                             }
                                         </td>
                                         <td>

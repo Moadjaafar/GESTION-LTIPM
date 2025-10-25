@@ -84,6 +84,7 @@ namespace GESTION_LTIPN.Controllers
             var booking = new Booking
             {
                 BookingReference = bookingReference,
+                Numero_BK = model.Numero_BK,
                 SocietyId = model.SocietyId,
                 TypeVoyage = model.TypeVoyage,
                 Nbr_LTC = model.Nbr_LTC,

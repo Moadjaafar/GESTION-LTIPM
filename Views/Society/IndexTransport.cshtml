@@ -1,9 +1,9 @@
-@model IEnumerable<GESTION_LTIPN.Models.Society>
+@model IEnumerable<GESTION_LTIPN.Models.SocietyTransp>
 
 @{
-    ViewData["Title"] = "Gestion des Sociétés";
+    ViewData["Title"] = "Gestion des Sociétés de Transport";
     var filter = ViewBag.Filter as string;
-    var type = ViewBag.Type as string ?? "regular";
+    var type = ViewBag.Type as string ?? "transport";
 }
 
 <div class="row">
@@ -26,9 +26,9 @@
 
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title mb-0">Sociétés</h4>
-                <a asp-action="Create" class="btn btn-primary">
-                    <i class="ri-add-line me-1"></i> Ajouter une société
+                <h4 class="card-title mb-0">Sociétés de Transport</h4>
+                <a asp-action="CreateTransport" class="btn btn-primary">
+                    <i class="ri-add-line me-1"></i> Ajouter une société de transport
                 </a>
             </div>
             <div class="card-body">
@@ -75,6 +75,7 @@
                                     <th>Ville</th>
                                     <th>Téléphone</th>
                                     <th>Email</th>
+                                    <th>Camions</th>
                                     <th>Statut</th>
                                     <th>Date de création</th>
                                     <th>Actions</th>
@@ -84,10 +85,20 @@
                                 @foreach (var society in Model)
                                 {
                                     <tr>
-                                        <td><strong>@society.SocietyName</strong></td>
+                                        <td><strong>@society.SocietyTranspName</strong></td>
                                         <td>@(society.City ?? "-")</td>
                                         <td>@(society.Phone ?? "-")</td>
                                         <td>@(society.Email ?? "-")</td>
+                                        <td>
+                                            @if (society.Camions != null && society.Camions.Any())
+                                            {
+                                                <span class="badge bg-info">@society.Camions.Count camion(s)</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
                                         <td>
                                             @if (society.IsActive)
                                             {
@@ -101,13 +112,13 @@
                                         <td>@society.CreatedAt.ToString("dd/MM/yyyy")</td>
                                         <td>
                                             <div class="d-flex gap-1">
-                                                <a asp-action="Details" asp-route-id="@society.SocietyId" class="btn btn-sm btn-outline-primary" title="Détails">
+                                                <a asp-action="DetailsTransport" asp-route-id="@society.SocietyTranspId" class="btn btn-sm btn-outline-primary" title="Détails">
                                                     <i class="ri-eye-line"></i>
                                                 </a>
-                                                <a asp-action="Edit" asp-route-id="@society.SocietyId" class="btn btn-sm btn-outline-warning" title="Modifier">
+                                                <a asp-action="EditTransport" asp-route-id="@society.SocietyTranspId" class="btn btn-sm btn-outline-warning" title="Modifier">
                                                     <i class="ri-edit-line"></i>
                                                 </a>
-                                                <form asp-action="ToggleStatus" asp-route-id="@society.SocietyId" method="post" class="d-inline">
+                                                <form asp-action="ToggleStatusTransport" asp-route-id="@society.SocietyTranspId" method="post" class="d-inline">
                                                     @Html.AntiForgeryToken()
                                                     @if (society.IsActive)
                                                     {
@@ -122,9 +133,9 @@
                                                         </button>
                                                     }
                                                 </form>
-                                                <form asp-action="Delete" asp-route-id="@society.SocietyId" method="post" class="d-inline">
+                                                <form asp-action="DeleteTransport" asp-route-id="@society.SocietyTranspId" method="post" class="d-inline">
                                                     @Html.AntiForgeryToken()
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer" onclick="return confirm('Voulez-vous vraiment supprimer cette société ?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer" onclick="return confirm('Voulez-vous vraiment supprimer cette société de transport ?')">
                                                         <i class="ri-delete-bin-line"></i>
                                                     </button>
                                                 </form>
@@ -139,10 +150,10 @@
                 else
                 {
                     <div class="text-center py-5">
-                        <i class="ri-building-line fs-1 text-muted d-block mb-2"></i>
-                        <p class="text-muted mb-3">Aucune société trouvée</p>
-                        <a asp-action="Create" class="btn btn-primary">
-                            <i class="ri-add-line me-1"></i> Créer la première société
+                        <i class="ri-truck-line fs-1 text-muted d-block mb-2"></i>
+                        <p class="text-muted mb-3">Aucune société de transport trouvée</p>
+                        <a asp-action="CreateTransport" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i> Créer la première société de transport
                         </a>
                     </div>
                 }

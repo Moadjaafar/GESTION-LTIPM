@@ -190,6 +190,7 @@ namespace GESTION_LTIPN.Controllers
             if (model.DepartureType == "Empty" && model.SocietySecondaireId.HasValue)
             {
                 model.SocietySecondaireId = null; // Force null for Empty type
+                model.Type_Emballage = null; // Clear Type_Emballage for Empty type
             }
 
             if (booking.Voyages.Count >= booking.Nbr_LTC)
@@ -206,6 +207,7 @@ namespace GESTION_LTIPN.Controllers
                 SocietyPrincipaleId = model.SocietyPrincipaleId,
                 SocietySecondaireId = model.SocietySecondaireId,
                 DepartureType = model.DepartureType,
+                Type_Emballage = model.Type_Emballage,
                 VoyageStatus = "Planned",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -276,6 +278,7 @@ namespace GESTION_LTIPN.Controllers
                 VoyageId = voyage.VoyageId,
                 BookingId = voyage.BookingId,
                 VoyageNumber = voyage.VoyageNumber,
+                Numero_TC = voyage.Numero_TC,
                 BookingReference = voyage.Booking?.BookingReference,
                 SocietyPrincipaleName = voyage.SocietyPrincipale?.SocietyName,
                 SocietySecondaireName = voyage.SocietySecondaire?.SocietyName,
@@ -323,9 +326,20 @@ namespace GESTION_LTIPN.Controllers
                 ModelState.AddModelError("DepartureCity", "La ville de départ est requise.");
             }
 
-            if (!model.CamionFirstDepart.HasValue)
+            // Validate camion: either from society or externe
+            if (model.IsFirstDepartExterne)
             {
-                ModelState.AddModelError("CamionFirstDepart", "Le camion pour le premier départ est requis.");
+                if (string.IsNullOrWhiteSpace(model.CamionMatricule_FirstDepart_Externe))
+                {
+                    ModelState.AddModelError("CamionMatricule_FirstDepart_Externe", "Le matricule du camion externe est requis.");
+                }
+            }
+            else
+            {
+                if (!model.CamionFirstDepart.HasValue)
+                {
+                    ModelState.AddModelError("CamionFirstDepart", "Le camion pour le premier départ est requis.");
+                }
             }
 
             if (!ModelState.IsValid)
@@ -353,7 +367,18 @@ namespace GESTION_LTIPN.Controllers
                 return View(model);
             }
 
-            voyage.CamionFirstDepart = model.CamionFirstDepart;
+            // Save camion info based on type (externe or from society)
+            if (model.IsFirstDepartExterne)
+            {
+                voyage.CamionFirstDepart = null;
+                voyage.CamionMatricule_FirstDepart_Externe = model.CamionMatricule_FirstDepart_Externe;
+            }
+            else
+            {
+                voyage.CamionFirstDepart = model.CamionFirstDepart;
+                voyage.CamionMatricule_FirstDepart_Externe = null;
+            }
+
             voyage.DepartureCity = model.DepartureCity;
             voyage.DepartureDate = model.DepartureDate;
             voyage.DepartureTime = model.DepartureTime;
@@ -362,7 +387,10 @@ namespace GESTION_LTIPN.Controllers
 
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Voyage {VoyageId} departed with truck {CamionId}", model.VoyageId, model.CamionFirstDepart);
+            var camionInfo = model.IsFirstDepartExterne
+                ? $"externe ({model.CamionMatricule_FirstDepart_Externe})"
+                : $"ID {model.CamionFirstDepart}";
+            _logger.LogInformation("Voyage {VoyageId} departed with truck {CamionInfo}", model.VoyageId, camionInfo);
 
             TempData["SuccessMessage"] = $"Départ du voyage #{model.VoyageNumber} enregistré avec succès.";
             return RedirectToAction(nameof(AssignVoyages), new { bookingId = voyage.BookingId });
@@ -406,6 +434,7 @@ namespace GESTION_LTIPN.Controllers
                 VoyageId = voyage.VoyageId,
                 BookingId = voyage.BookingId,
                 VoyageNumber = voyage.VoyageNumber,
+                Numero_TC = voyage.Numero_TC,
                 BookingReference = voyage.Booking?.BookingReference,
                 SocietyPrincipaleName = voyage.SocietyPrincipale?.SocietyName,
                 SocietySecondaireName = voyage.SocietySecondaire?.SocietyName,
@@ -526,6 +555,7 @@ namespace GESTION_LTIPN.Controllers
                 VoyageId = voyage.VoyageId,
                 BookingId = voyage.BookingId,
                 VoyageNumber = voyage.VoyageNumber,
+                Numero_TC = voyage.Numero_TC,
                 BookingReference = voyage.Booking?.BookingReference,
                 SocietyPrincipaleName = voyage.SocietyPrincipale?.SocietyName,
                 SocietySecondaireName = voyage.SocietySecondaire?.SocietyName,
@@ -577,9 +607,20 @@ namespace GESTION_LTIPN.Controllers
                 ModelState.AddModelError("ReturnArrivalCity", "La ville d'arrivée est requise.");
             }
 
-            if (!model.CamionSecondDepart.HasValue)
+            // Validate camion: either from society or externe
+            if (model.IsSecondDepartExterne)
             {
-                ModelState.AddModelError("CamionSecondDepart", "Le camion pour le deuxième départ est requis.");
+                if (string.IsNullOrWhiteSpace(model.CamionMatricule_SecondDepart_Externe))
+                {
+                    ModelState.AddModelError("CamionMatricule_SecondDepart_Externe", "Le matricule du camion externe est requis.");
+                }
+            }
+            else
+            {
+                if (!model.CamionSecondDepart.HasValue)
+                {
+                    ModelState.AddModelError("CamionSecondDepart", "Le camion pour le deuxième départ est requis.");
+                }
             }
 
             if (model.ReturnDepartureDate.HasValue && voyage.ReceptionDate.HasValue && model.ReturnDepartureDate < voyage.ReceptionDate)
@@ -615,7 +656,18 @@ namespace GESTION_LTIPN.Controllers
                 return View(model);
             }
 
-            voyage.CamionSecondDepart = model.CamionSecondDepart;
+            // Save camion info based on type (externe or from society)
+            if (model.IsSecondDepartExterne)
+            {
+                voyage.CamionSecondDepart = null;
+                voyage.CamionMatricule_SecondDepart_Externe = model.CamionMatricule_SecondDepart_Externe;
+            }
+            else
+            {
+                voyage.CamionSecondDepart = model.CamionSecondDepart;
+                voyage.CamionMatricule_SecondDepart_Externe = null;
+            }
+
             voyage.ReturnDepartureDate = model.ReturnDepartureDate;
             voyage.ReturnDepartureTime = model.ReturnDepartureTime;
             voyage.ReturnArrivalCity = model.ReturnArrivalCity;
@@ -623,7 +675,10 @@ namespace GESTION_LTIPN.Controllers
 
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Voyage {VoyageId} return departure recorded with truck {CamionId}", model.VoyageId, model.CamionSecondDepart);
+            var camionInfo = model.IsSecondDepartExterne
+                ? $"externe ({model.CamionMatricule_SecondDepart_Externe})"
+                : $"ID {model.CamionSecondDepart}";
+            _logger.LogInformation("Voyage {VoyageId} return departure recorded with truck {CamionInfo}", model.VoyageId, camionInfo);
 
             TempData["SuccessMessage"] = $"Départ retour du voyage #{model.VoyageNumber} de Dakhla enregistré avec succès.";
             return RedirectToAction(nameof(AssignVoyages), new { bookingId = voyage.BookingId });
@@ -667,6 +722,7 @@ namespace GESTION_LTIPN.Controllers
                 VoyageId = voyage.VoyageId,
                 BookingId = voyage.BookingId,
                 VoyageNumber = voyage.VoyageNumber,
+                Numero_TC = voyage.Numero_TC,
                 BookingReference = voyage.Booking?.BookingReference,
                 SocietyPrincipaleName = voyage.SocietyPrincipale?.SocietyName,
                 SocietySecondaireName = voyage.SocietySecondaire?.SocietyName,

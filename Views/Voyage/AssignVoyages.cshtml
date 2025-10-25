@@ -102,6 +102,7 @@
                                     <th>Ville de départ</th>
                                     <th>Date de départ</th>
                                     <th>Type</th>
+                                    <th>Type Emballage</th>
                                     <th>Camion</th>
                                     <th>Statut</th>
                                     <th>Prix</th>
@@ -149,6 +150,16 @@
                                             else
                                             {
                                                 <span class="badge bg-secondary">Vide</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(voyage.Type_Emballage))
+                                            {
+                                                <span class="text-dark">@voyage.Type_Emballage</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
                                             }
                                         </td>
                                         <td>

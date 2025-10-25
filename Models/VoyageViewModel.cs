@@ -11,9 +11,10 @@ namespace GESTION_LTIPN.Models
         [Display(Name = "Numéro de voyage")]
         public int VoyageNumber { get; set; }
 
+        [Required(ErrorMessage = "Le numéro TC est requis")]
         [Display(Name = "Numéro TC")]
-        [StringLength(50)]
-        public string? Numero_TC { get; set; }
+        [StringLength(50, ErrorMessage = "Le numéro TC ne peut pas dépasser 50 caractères")]
+        public string Numero_TC { get; set; } = string.Empty;
 
         [Display(Name = "Société principale")]
         public int SocietyPrincipaleId { get; set; } // Auto-set from booking, no validation needed
@@ -27,11 +28,25 @@ namespace GESTION_LTIPN.Models
         [Display(Name = "Camion (1er départ)")]
         public int? CamionFirstDepart { get; set; }
 
+        [Display(Name = "Type de camion (1er départ)")]
+        public bool IsFirstDepartExterne { get; set; } // false = from society, true = externe
+
+        [Display(Name = "Matricule camion externe (1er départ)")]
+        [StringLength(50, ErrorMessage = "Le matricule ne peut pas dépasser 50 caractères")]
+        public string? CamionMatricule_FirstDepart_Externe { get; set; }
+
         [Display(Name = "Société de transport (2ème départ)")]
         public int? SocietyTranspSecondId { get; set; }
 
         [Display(Name = "Camion (2ème départ)")]
         public int? CamionSecondDepart { get; set; }
+
+        [Display(Name = "Type de camion (2ème départ)")]
+        public bool IsSecondDepartExterne { get; set; } // false = from society, true = externe
+
+        [Display(Name = "Matricule camion externe (2ème départ)")]
+        [StringLength(50, ErrorMessage = "Le matricule ne peut pas dépasser 50 caractères")]
+        public string? CamionMatricule_SecondDepart_Externe { get; set; }
 
         [Display(Name = "Ville de départ")]
         public string? DepartureCity { get; set; }
@@ -47,6 +62,10 @@ namespace GESTION_LTIPN.Models
         [Required(ErrorMessage = "Le type de départ est requis")]
         [Display(Name = "Type de départ")]
         public string DepartureType { get; set; } = string.Empty;
+
+        [Display(Name = "Type d'emballage")]
+        [StringLength(200, ErrorMessage = "Le type d'emballage ne peut pas dépasser 200 caractères")]
+        public string? Type_Emballage { get; set; }
 
         // Reception Information (in Dakhla)
         [Display(Name = "Date de réception à Dakhla")]

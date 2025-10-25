@@ -16,6 +16,7 @@
                     <input type="hidden" asp-for="BookingId" />
                     <input type="hidden" asp-for="VoyageNumber" />
                     <input type="hidden" asp-for="DepartureType" />
+                    <input type="hidden" asp-for="Numero_TC" />
 
                     @if (!ViewData.ModelState.IsValid)
                     {
@@ -73,8 +74,29 @@
                         </div>
 
                         <div class="col-md-6 mb-4">
+                            <label class="form-label">Type de camion <span class="text-danger">*</span></label>
+                            <div class="mb-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="IsFirstDepartExterne" id="camionFromSociety" value="false" checked>
+                                    <label class="form-check-label" for="camionFromSociety">
+                                        Société de transport
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="IsFirstDepartExterne" id="camionExterne" value="true">
+                                    <label class="form-check-label" for="camionExterne">
+                                        Externe
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Société de transport section (show when not externe) -->
+                    <div class="row" id="societySection">
+                        <div class="col-md-6 mb-4">
                             <label asp-for="SocietyTranspFirstId" class="form-label">Société de transport <span class="text-danger">*</span></label>
-                            <select asp-for="SocietyTranspFirstId" asp-items="@(new SelectList(Model.SocietiesTransp, "SocietyTranspId", "SocietyTranspName"))" class="form-select" id="societyTranspFirst" required>
+                            <select asp-for="SocietyTranspFirstId" asp-items="@(new SelectList(Model.SocietiesTransp, "SocietyTranspId", "SocietyTranspName"))" class="form-select" id="societyTranspFirst">
                                 <option value="">-- Sélectionner --</option>
                             </select>
                             <span asp-validation-for="SocietyTranspFirstId" class="text-danger"></span>
@@ -82,10 +104,20 @@
 
                         <div class="col-md-6 mb-4">
                             <label asp-for="CamionFirstDepart" class="form-label">Camion (1er départ) <span class="text-danger">*</span></label>
-                            <select asp-for="CamionFirstDepart" class="form-select" id="camionFirst" required disabled>
+                            <select asp-for="CamionFirstDepart" class="form-select" id="camionFirst" disabled>
                                 <option value="">-- Sélectionner une société de transport d'abord --</option>
                             </select>
                             <span asp-validation-for="CamionFirstDepart" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Externe matricule section (show when externe) -->
+                    <div class="row" id="externeSection" style="display: none;">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="CamionMatricule_FirstDepart_Externe" class="form-label">Matricule du camion externe <span class="text-danger">*</span></label>
+                            <input asp-for="CamionMatricule_FirstDepart_Externe" type="text" class="form-control" id="matriculeExterne" maxlength="50" placeholder="Ex: A-12345-B">
+                            <span asp-validation-for="CamionMatricule_FirstDepart_Externe" class="text-danger"></span>
+                            <small class="text-muted">Pour camions utilisés une seule fois</small>
                         </div>
                     </div>
 
@@ -134,10 +166,43 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Load camions when society transport is selected
+            // Elements
+            const radioFromSociety = document.getElementById('camionFromSociety');
+            const radioExterne = document.getElementById('camionExterne');
+            const societySection = document.getElementById('societySection');
+            const externeSection = document.getElementById('externeSection');
             const societyTranspSelect = document.getElementById('societyTranspFirst');
             const camionSelect = document.getElementById('camionFirst');
+            const matriculeExterneInput = document.getElementById('matriculeExterne');
 
+            // Toggle between society and externe sections
+            function toggleCamionType() {
+                if (radioExterne.checked) {
+                    societySection.style.display = 'none';
+                    externeSection.style.display = 'block';
+                    // Clear society selections and remove required
+                    societyTranspSelect.value = '';
+                    camionSelect.value = '';
+                    societyTranspSelect.removeAttribute('required');
+                    camionSelect.removeAttribute('required');
+                    // Set externe input as required
+                    matriculeExterneInput.setAttribute('required', 'required');
+                } else {
+                    societySection.style.display = 'block';
+                    externeSection.style.display = 'none';
+                    // Clear externe input and remove required
+                    matriculeExterneInput.value = '';
+                    matriculeExterneInput.removeAttribute('required');
+                    // Set society/camion as required
+                    societyTranspSelect.setAttribute('required', 'required');
+                    camionSelect.setAttribute('required', 'required');
+                }
+            }
+
+            radioFromSociety.addEventListener('change', toggleCamionType);
+            radioExterne.addEventListener('change', toggleCamionType);
+
+            // Load camions when society transport is selected
             societyTranspSelect.addEventListener('change', function() {
                 const societyTranspId = this.value;
 
@@ -176,6 +241,9 @@
                     camionSelect.innerHTML = '<option value="">-- Sélectionner une société de transport d\'abord --</option>';
                 }
             });
+
+            // Initialize on page load
+            toggleCamionType();
         });
     </script>
 }
