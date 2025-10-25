@@ -15,6 +15,7 @@
                     <input type="hidden" asp-for="VoyageId" />
                     <input type="hidden" asp-for="BookingId" />
                     <input type="hidden" asp-for="VoyageNumber" />
+                    <input type="hidden" asp-for="Numero_TC" />
                     <input type="hidden" asp-for="DepartureCity" />
                     <input type="hidden" asp-for="DepartureType" />
 
@@ -71,8 +72,29 @@
                     <!-- Return Departure Information -->
                     <div class="row">
                         <div class="col-md-6 mb-4">
+                            <label class="form-label">Type de camion <span class="text-danger">*</span></label>
+                            <div class="mb-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="IsSecondDepartExterne" id="camionSecondFromSociety" value="false" checked>
+                                    <label class="form-check-label" for="camionSecondFromSociety">
+                                        Société de transport
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="IsSecondDepartExterne" id="camionSecondExterne" value="true">
+                                    <label class="form-check-label" for="camionSecondExterne">
+                                        Externe
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Société de transport section (show when not externe) -->
+                    <div class="row" id="societySecondSection">
+                        <div class="col-md-6 mb-4">
                             <label asp-for="SocietyTranspSecondId" class="form-label">Société de transport (retour) <span class="text-danger">*</span></label>
-                            <select asp-for="SocietyTranspSecondId" asp-items="@(new SelectList(Model.SocietiesTransp, "SocietyTranspId", "SocietyTranspName"))" class="form-select" id="societyTranspSecond" required>
+                            <select asp-for="SocietyTranspSecondId" asp-items="@(new SelectList(Model.SocietiesTransp, "SocietyTranspId", "SocietyTranspName"))" class="form-select" id="societyTranspSecond">
                                 <option value="">-- Sélectionner --</option>
                             </select>
                             <span asp-validation-for="SocietyTranspSecondId" class="text-danger"></span>
@@ -80,12 +102,24 @@
 
                         <div class="col-md-6 mb-4">
                             <label asp-for="CamionSecondDepart" class="form-label">Camion (2ème départ) <span class="text-danger">*</span></label>
-                            <select asp-for="CamionSecondDepart" class="form-select" id="camionSecond" required disabled>
+                            <select asp-for="CamionSecondDepart" class="form-select" id="camionSecond" disabled>
                                 <option value="">-- Sélectionner une société de transport d'abord --</option>
                             </select>
                             <span asp-validation-for="CamionSecondDepart" class="text-danger"></span>
                         </div>
+                    </div>
 
+                    <!-- Externe matricule section (show when externe) -->
+                    <div class="row" id="externeSecondSection" style="display: none;">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="CamionMatricule_SecondDepart_Externe" class="form-label">Matricule du camion externe <span class="text-danger">*</span></label>
+                            <input asp-for="CamionMatricule_SecondDepart_Externe" type="text" class="form-control" id="matriculeSecondExterne" maxlength="50" placeholder="Ex: A-12345-B">
+                            <span asp-validation-for="CamionMatricule_SecondDepart_Externe" class="text-danger"></span>
+                            <small class="text-muted">Pour camions utilisés une seule fois</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-6 mb-4">
                             <label asp-for="ReturnArrivalCity" class="form-label">Ville d'arrivée <span class="text-danger">*</span></label>
                             <select asp-for="ReturnArrivalCity" asp-items="@(new SelectList(Model.DepartureCities))" class="form-select" required>
@@ -138,10 +172,54 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Load camions for second truck when society transport is selected
+            // Get all necessary elements
+            const radioSociety = document.getElementById('camionSecondFromSociety');
+            const radioExterne = document.getElementById('camionSecondExterne');
+            const societySecondSection = document.getElementById('societySecondSection');
+            const externeSecondSection = document.getElementById('externeSecondSection');
             const societyTranspSelect = document.getElementById('societyTranspSecond');
             const camionSelect = document.getElementById('camionSecond');
+            const matriculeExterneInput = document.getElementById('matriculeSecondExterne');
 
+            // Toggle function to show/hide sections based on radio selection
+            function toggleSections() {
+                if (radioExterne.checked) {
+                    // Show externe section, hide society section
+                    societySecondSection.style.display = 'none';
+                    externeSecondSection.style.display = 'block';
+
+                    // Clear society fields and remove their required state
+                    societyTranspSelect.value = '';
+                    societyTranspSelect.removeAttribute('required');
+                    camionSelect.value = '';
+                    camionSelect.removeAttribute('required');
+                    camionSelect.disabled = true;
+
+                    // Set externe field as required
+                    matriculeExterneInput.setAttribute('required', 'required');
+                } else {
+                    // Show society section, hide externe section
+                    societySecondSection.style.display = 'block';
+                    externeSecondSection.style.display = 'none';
+
+                    // Clear externe field and remove its required state
+                    matriculeExterneInput.value = '';
+                    matriculeExterneInput.removeAttribute('required');
+
+                    // Set society fields as required
+                    societyTranspSelect.setAttribute('required', 'required');
+                    camionSelect.setAttribute('required', 'required');
+                }
+            }
+
+            // Add event listeners to radio buttons
+            radioSociety.addEventListener('change', toggleSections);
+            radioExterne.addEventListener('change', toggleSections);
+
+            // Initialize on page load
+            toggleSections();
+
+            // Load camions for second truck when society transport is selected
             societyTranspSelect.addEventListener('change', function() {
                 const societyTranspId = this.value;
 

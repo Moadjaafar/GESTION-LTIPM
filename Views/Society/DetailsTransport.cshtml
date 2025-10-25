@@ -1,0 +1,137 @@
+@model GESTION_LTIPN.Models.SocietyTransp
+
+@{
+    ViewData["Title"] = "Détails de la Société de Transport";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">Société de Transport: @Model.SocietyTranspName</h4>
+                <div class="d-flex gap-2">
+                    <a asp-action="EditTransport" asp-route-id="@Model.SocietyTranspId" class="btn btn-warning btn-sm">
+                        <i class="ri-edit-line me-1"></i> Modifier
+                    </a>
+                    <a asp-action="Index" asp-route-type="transport" class="btn btn-secondary btn-sm">
+                        <i class="ri-arrow-left-line me-1"></i> Retour
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-50">Nom:</th>
+                                <td><strong>@Model.SocietyTranspName</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Adresse:</th>
+                                <td>@(Model.Address ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th>Ville:</th>
+                                <td>@(Model.City ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th>Téléphone:</th>
+                                <td>@(Model.Phone ?? "-")</td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td>@(Model.Email ?? "-")</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th class="w-50">Statut:</th>
+                                <td>
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Nombre de camions:</th>
+                                <td>
+                                    @if (Model.Camions != null && Model.Camions.Any())
+                                    {
+                                        <strong class="text-primary">@Model.Camions.Count camion(s)</strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Aucun camion</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date de création:</th>
+                                <td>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                            <tr>
+                                <th>Dernière mise à jour:</th>
+                                <td>@Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Camions List -->
+        @if (Model.Camions != null && Model.Camions.Any())
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="ri-truck-line me-1"></i> Camions (@Model.Camions.Count)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Type</th>
+                                    <th>Chauffeur</th>
+                                    <th>Téléphone chauffeur</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var camion in Model.Camions.OrderBy(c => c.CamionMatricule))
+                                {
+                                    <tr>
+                                        <td><strong>@camion.CamionMatricule</strong></td>
+                                        <td>@(camion.CamionType ?? "-")</td>
+                                        <td>@(camion.DriverName ?? "-")</td>
+                                        <td>@(camion.DriverPhone ?? "-")</td>
+                                        <td>
+                                            @if (camion.IsActive)
+                                            {
+                                                <span class="badge bg-success">Actif</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactif</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

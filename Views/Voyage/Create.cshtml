@@ -29,10 +29,10 @@
 
                     <!-- Numero TC -->
                     <div class="mb-4">
-                        <label asp-for="Numero_TC" class="form-label">Numéro TC</label>
-                        <input asp-for="Numero_TC" class="form-control" placeholder="Entrez le numéro TC" />
+                        <label asp-for="Numero_TC" class="form-label">Numéro TC <span class="text-danger">*</span></label>
+                        <input asp-for="Numero_TC" class="form-control" placeholder="Entrez le numéro TC" required />
                         <span asp-validation-for="Numero_TC" class="text-danger"></span>
-                        <small class="text-muted">Numéro d'identification du transport</small>
+                        <small class="text-muted">Numéro d'identification du transport (obligatoire)</small>
                     </div>
 
                     <!-- Society Principale (Read-only from booking) -->
@@ -77,6 +77,13 @@
                         <span asp-validation-for="SocietySecondaireId" class="text-danger"></span>
                     </div>
 
+                    <!-- Type d'emballage (Only visible if Emballage) -->
+                    <div class="mb-4" id="typeEmballageContainer" style="display: none;">
+                        <label asp-for="Type_Emballage" class="form-label">Type d'emballage</label>
+                        <input asp-for="Type_Emballage" type="text" class="form-control" id="typeEmballage" maxlength="200" placeholder="Entrez le type d'emballage" />
+                        <span asp-validation-for="Type_Emballage" class="text-danger"></span>
+                        <small class="text-muted">Précisez le type d'emballage utilisé (ex: Carton, Palettes, etc.)</small>
+                    </div>
 
                     <div class="d-flex gap-2 justify-content-end">
                         <a asp-action="AssignVoyages" asp-route-bookingId="@Model.BookingId" class="btn btn-secondary">
@@ -109,21 +116,30 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-        // Show/hide Society Secondaire based on Departure Type
+        // Show/hide Society Secondaire and Type_Emballage based on Departure Type
         const departureTypeSelect = document.getElementById('departureType');
         const checkDepartureType = function() {
-            const container = document.getElementById('societySecondaireContainer');
+            const societyContainer = document.getElementById('societySecondaireContainer');
             const societySecondaire = document.getElementById('societySecondaire');
+            const typeEmballageContainer = document.getElementById('typeEmballageContainer');
+            const typeEmballage = document.getElementById('typeEmballage');
 
             if (departureTypeSelect.value === 'Emballage') {
                 // Show and make required
-                container.style.display = 'block';
+                societyContainer.style.display = 'block';
                 societySecondaire.required = true;
+
+                // Show Type_Emballage input
+                typeEmballageContainer.style.display = 'block';
             } else {
                 // Hide and clear
-                container.style.display = 'none';
+                societyContainer.style.display = 'none';
                 societySecondaire.required = false;
                 societySecondaire.value = '';
+
+                // Hide and clear Type_Emballage
+                typeEmballageContainer.style.display = 'none';
+                typeEmballage.value = '';
             }
         };
 

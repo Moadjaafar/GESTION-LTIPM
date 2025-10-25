@@ -13,6 +13,10 @@ namespace GESTION_LTIPN.Models
         public string BookingReference { get; set; } = string.Empty;
 
         [Required]
+        [StringLength(50)]
+        public string Numero_BK { get; set; } = string.Empty;
+
+        [Required]
         public int SocietyId { get; set; }
 
         [Required]

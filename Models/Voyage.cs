@@ -14,8 +14,9 @@ namespace GESTION_LTIPN.Models
         [Required]
         public int VoyageNumber { get; set; } // Sequential number for voyages in a booking
 
+        [Required]
         [StringLength(50)]
-        public string? Numero_TC { get; set; } // TC Number for the voyage
+        public string Numero_TC { get; set; } = string.Empty; // TC Number for the voyage
 
         // Society Assignment
         [Required]
@@ -28,6 +29,13 @@ namespace GESTION_LTIPN.Models
 
         public int? CamionSecondDepart { get; set; } // Truck for return departure (Dakhla -> Agadir/Casablanca)
 
+        // Externe Camion (for one-time use, not in Camions table)
+        [StringLength(50)]
+        public string? CamionMatricule_FirstDepart_Externe { get; set; }
+
+        [StringLength(50)]
+        public string? CamionMatricule_SecondDepart_Externe { get; set; }
+
         // Departure Information
         [StringLength(50)]
         public string? DepartureCity { get; set; } // 'Agadir' or 'Casablanca' - nullable now
@@ -39,6 +47,9 @@ namespace GESTION_LTIPN.Models
         [Required]
         [StringLength(50)]
         public string DepartureType { get; set; } = string.Empty; // 'Emballage' or 'Empty'
+
+        [StringLength(200)]
+        public string? Type_Emballage { get; set; } // Only required if DepartureType is 'Emballage'
 
         // Reception Information (in Dakhla)
         public DateTime? ReceptionDate { get; set; }

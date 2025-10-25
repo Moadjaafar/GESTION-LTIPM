@@ -38,6 +38,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Référence</th>
+                                <th>Numéro BK</th>
                                 <th>Société</th>
                                 <th>Type de voyage</th>
                                 <th>Nbr LTC</th>
@@ -55,6 +56,9 @@
                                     <tr>
                                         <td>
                                             <strong class="text-primary">@item.BookingReference</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">@item.Numero_BK</span>
                                         </td>
                                         <td>@item.Society?.SocietyName</td>
                                         <td>@item.TypeVoyage</td>
@@ -91,7 +95,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="8" class="text-center py-5">
+                                    <td colspan="9" class="text-center py-5">
                                         <i class="ri-inbox-line fs-1 text-muted d-block mb-2"></i>
                                         <p class="text-muted mb-0">Aucune réservation trouvée</p>
                                     </td>

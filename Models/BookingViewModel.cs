@@ -9,6 +9,11 @@ namespace GESTION_LTIPN.Models
         [Display(Name = "Référence de réservation")]
         public string BookingReference { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Le numéro BK est requis")]
+        [Display(Name = "Numéro BK")]
+        [StringLength(50, ErrorMessage = "Le numéro BK ne peut pas dépasser 50 caractères")]
+        public string Numero_BK { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "La société est requise")]
         [Display(Name = "Société")]
         public int SocietyId { get; set; }
