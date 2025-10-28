@@ -18,6 +18,10 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Add Stock DbContext (for Gestion_Stock_QRCodee database)
+builder.Services.AddDbContext<StockDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("StockConnection")));
+
 // Add Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

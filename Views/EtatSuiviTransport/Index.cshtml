@@ -1,0 +1,471 @@
+@model GESTION_LTIPN.Models.Stock.EtatSuiviTransportViewModel
+@{
+    ViewData["Title"] = "État des Transports Congelé";
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- Page Header -->
+        <div class="card bg-primary bg-gradient mb-4">
+            <div class="card-body">
+                <h2 class="text-white mb-0"><i class="ri-truck-line me-2"></i>État des Transports Congelé</h2>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-start border-info border-3">
+                    <div class="card-body text-center">
+                        <h5 class="text-muted text-uppercase fs-13">Total Départs</h5>
+                        <h3 class="mb-0 text-info">@Model.TotalDeparts</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-start border-warning border-3">
+                    <div class="card-body text-center">
+                        <h5 class="text-muted text-uppercase fs-13">En Transit</h5>
+                        <h3 class="mb-0 text-warning">@Model.EnTransit</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-start border-success border-3">
+                    <div class="card-body text-center">
+                        <h5 class="text-muted text-uppercase fs-13">Livrés</h5>
+                        <h3 class="mb-0 text-success">@Model.Livres</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-start border-primary border-3">
+                    <div class="card-body text-center">
+                        <h5 class="text-muted text-uppercase fs-13">Total Palettes</h5>
+                        <h3 class="mb-0 text-primary">@Model.TotalPalettes</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Filtres de Recherche</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Index" method="get">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Date Début</label>
+                            <input type="date" class="form-control" asp-for="DateDebut" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Date Fin</label>
+                            <input type="date" class="form-control" asp-for="DateFin" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Camion</label>
+                            <select class="form-select" asp-for="CamionId">
+                                <option value="">-- Tous les camions --</option>
+                                @foreach (var camion in Model.Camions)
+                                {
+                                    <option value="@camion.IdCamion">@camion.NumeroCamion - @camion.Chauffeur</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100 me-2">
+                                <i class="ri-search-line me-1"></i> Rechercher
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="ri-refresh-line"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Card -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Résultats</h5>
+                <a asp-action="ExportToExcel" asp-route-dateDebut="@Model.DateDebut" asp-route-dateFin="@Model.DateFin" asp-route-camionId="@Model.CamionId" class="btn btn-success btn-sm">
+                    <i class="ri-file-excel-line me-1"></i> Exporter Excel
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center">ID</th>
+                                <th class="text-center">N° Bon</th>
+                                <th class="text-center">N° Camion</th>
+                                <th class="text-center">Chauffeur</th>
+                                <th class="text-center">Type</th>
+                                <th class="text-center">Départ</th>
+                                <th class="text-center">Réception</th>
+                                <th class="text-center">Env.</th>
+                                <th class="text-center">Reçu</th>
+                                <th class="text-center">Destination</th>
+                                <th class="text-center">Date/Heure Arrivée</th>
+                                <th class="text-center">Date/Heure Fin</th>
+                                <th class="text-center">Durée (h:m)</th>
+                                <th class="text-center">État</th>
+                                <th class="text-center">Prix Booking (DH)</th>
+                                <th class="text-center">Observations</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Transports.Any())
+                            {
+                                @foreach (var transport in Model.Transports)
+                                {
+                                    <tr>
+                                        <td class="text-center">@transport.IdDepart</td>
+                                        <td class="text-center">@transport.NumeroBon</td>
+                                        <td class="text-center">@transport.NumeroCamion</td>
+                                        <td class="text-center">@transport.Chauffeur</td>
+                                        <td class="text-center">@transport.TypeCamion</td>
+                                        <td class="text-center">
+                                            @if (transport.DateDepart.HasValue)
+                                            {
+                                                @transport.DateDepart.Value.ToString("dd/MM/yyyy")
+                                                <br />
+                                            }
+                                            @(transport.HeureDepart ?? "--:--")
+                                        </td>
+                                        <td class="text-center">
+                                            @if (transport.DateReception.HasValue)
+                                            {
+                                                @transport.DateReception.Value.ToString("dd/MM/yyyy")
+                                                <br />
+                                            }
+                                            @(transport.HeureReception ?? "--:--")
+                                        </td>
+                                        <td class="text-center">@transport.NombrePalettes</td>
+                                        <td class="text-center">@transport.NombrePalettesRecues</td>
+                                        <td class="text-center">@transport.Destination</td>
+                                        <td class="text-center">
+                                            @(transport.DateHeureArrivee?.ToString("dd/MM/yyyy HH:mm") ?? "--")
+                                        </td>
+                                        <td class="text-center">
+                                            @(transport.DateHeureFin?.ToString("dd/MM/yyyy HH:mm") ?? "--")
+                                        </td>
+                                        <td class="text-center">@transport.DureeTransfert</td>
+                                        <td class="text-center">
+                                            @if (transport.EtatTransfert == "En Transit")
+                                            {
+                                                <span class="badge bg-warning text-dark">@transport.EtatTransfert</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">@transport.EtatTransfert</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="text-success">@(transport.PriceBooking?.ToString("N2") ?? "--")</strong>
+                                        </td>
+                                        <td class="text-center">@transport.Observations</td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-primary" onclick="showLogistiqueModal(@transport.IdDepart)">
+                                                <i class="ri-edit-box-line"></i> Saisir
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="17" class="text-center text-muted py-4">
+                                        <i class="ri-search-line fs-3 d-block mb-2"></i>
+                                        <p class="mb-0">Aucun transport trouvé</p>
+                                        <small>Essayez de modifier vos critères de recherche</small>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Modals {
+
+<!-- Logistique Info Modal -->
+<div class="modal fade" id="logistiqueModal" tabindex="-1" role="dialog" aria-labelledby="logistiqueModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="logistiqueModalLabel">
+                    <i class="ri-file-list-3-line me-2"></i>Informations Logistique Stock
+                </h5>
+                <button type="button" class="btn-close icon-btn-sm btn-close-white" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="ri-close-large-line fw-semibold"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="ri-information-line me-2"></i><strong>Départ ID:</strong>
+                    <span id="logistiqueDepartId" class="fw-bold"></span>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            <i class="ri-calendar-check-line me-1"></i>Date/Heure Arrivée
+                        </label>
+                        <input type="datetime-local" id="logistiqueDateHeureArrivee" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            <i class="ri-calendar-check-line me-1"></i>Date/Heure Fin
+                        </label>
+                        <input type="datetime-local" id="logistiqueDateHeureFin" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">
+                            <i class="ri-time-line me-1 text-success"></i>Durée Calculée
+                        </label>
+                        <input type="text" id="logistiqueDureeCalculee" class="form-control bg-light text-center fw-bold" readonly placeholder="--:--" />
+                        <small class="text-muted">Format: Heures:Minutes (ex: 5:30 pour 5h30)</small>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            <i class="ri-price-tag-3-line me-1 text-info"></i>Tarif Proposé (DH)
+                        </label>
+                        <div class="input-group">
+                            <input type="text" id="logistiqueTarifPropose" class="form-control bg-light" readonly placeholder="Calculé automatiquement" />
+                            <button type="button" class="btn btn-outline-primary" onclick="applyProposedTarif()" title="Appliquer ce tarif">
+                                <i class="ri-arrow-right-line"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Basé sur TARIF FACTURATION IMM FRIGO</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            <i class="ri-money-dollar-circle-line me-1"></i>Prix Booking Final (DH)
+                        </label>
+                        <input type="number" id="logistiquePriceBooking" class="form-control" step="0.01" placeholder="0.00" />
+                        <small class="text-muted">Modifiable si nécessaire</small>
+                    </div>
+                </div>
+
+                <input type="hidden" id="logistiqueIdDepart" />
+                <input type="hidden" id="logistiqueId" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="ri-close-line me-1"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveLogistiqueInfo()">
+                    <i class="ri-save-line me-1"></i>Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+@section Scripts {
+    <script>
+        function showLogistiqueModal(idDepart) {
+            // Reset form
+            document.getElementById('logistiqueDepartId').textContent = idDepart;
+            document.getElementById('logistiqueIdDepart').value = idDepart;
+            document.getElementById('logistiqueId').value = '';
+            document.getElementById('logistiqueDateHeureArrivee').value = '';
+            document.getElementById('logistiqueDateHeureFin').value = '';
+            document.getElementById('logistiqueDureeCalculee').value = '--:--';
+            document.getElementById('logistiqueTarifPropose').value = '';
+            document.getElementById('logistiquePriceBooking').value = '';
+
+            // Fetch existing data
+            fetch(`/EtatSuiviTransport/GetLogistiqueInfo?idDepart=${idDepart}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.info) {
+                        document.getElementById('logistiqueId').value = data.info.id || '';
+
+                        // Format datetime for datetime-local input
+                        if (data.info.dateHeureArrivee) {
+                            const arrDate = new Date(data.info.dateHeureArrivee);
+                            document.getElementById('logistiqueDateHeureArrivee').value = formatDateTimeLocal(arrDate);
+                        }
+
+                        if (data.info.dateHeureFin) {
+                            const finDate = new Date(data.info.dateHeureFin);
+                            document.getElementById('logistiqueDateHeureFin').value = formatDateTimeLocal(finDate);
+                        }
+
+                        if (data.info.priceBooking) {
+                            document.getElementById('logistiquePriceBooking').value = data.info.priceBooking;
+                        }
+                    }
+
+                    // Calculate proposed tariff after loading data
+                    updateTarifPropose();
+
+                    var modal = new bootstrap.Modal(document.getElementById('logistiqueModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    // Show modal anyway
+                    var modal = new bootstrap.Modal(document.getElementById('logistiqueModal'));
+                    modal.show();
+                });
+        }
+
+        function formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        // Calculate tariff based on duration (TARIF FACTURATION IMM FRIGO)
+        function calculateTarif(dateHeureArrivee, dateHeureFin) {
+            if (!dateHeureArrivee || !dateHeureFin) {
+                return null;
+            }
+
+            const arriveDate = new Date(dateHeureArrivee);
+            const finDate = new Date(dateHeureFin);
+
+            // Calculate duration in hours
+            const durationMs = finDate - arriveDate;
+            const durationHours = durationMs / (1000 * 60 * 60);
+
+            if (durationHours < 0) {
+                return null; // Invalid: end date before start date
+            }
+
+            let tarif = 0;
+
+            if (durationHours <= 4) {
+                tarif = 900;
+            } else if (durationHours <= 10) {
+                tarif = 1000;
+            } else if (durationHours <= 16) {
+                tarif = 1200;
+            } else if (durationHours <= 24) {
+                tarif = 1500;
+            } else if (durationHours <= 30) {
+                tarif = 1900;
+            } else if (durationHours <= 47) {
+                tarif = 2500;
+            } else {
+                // More than 47 hours: 2500 base + 1000 per additional day
+                tarif = 2500;
+                const additionalHours = durationHours - 47;
+                const additionalDays = Math.ceil(additionalHours / 24);
+                tarif += additionalDays * 1000;
+            }
+
+            return tarif;
+        }
+
+        // Auto-calculate tariff when dates change
+        function updateTarifPropose() {
+            const dateHeureArrivee = document.getElementById('logistiqueDateHeureArrivee').value;
+            const dateHeureFin = document.getElementById('logistiqueDateHeureFin').value;
+
+            // Calculate and display duration
+            if (dateHeureArrivee && dateHeureFin) {
+                const arriveDate = new Date(dateHeureArrivee);
+                const finDate = new Date(dateHeureFin);
+                const durationMs = finDate - arriveDate;
+
+                if (durationMs >= 0) {
+                    const durationMinutes = Math.floor(durationMs / (1000 * 60));
+                    const hours = Math.floor(durationMinutes / 60);
+                    const minutes = durationMinutes % 60;
+
+                    document.getElementById('logistiqueDureeCalculee').value =
+                        hours + ':' + String(minutes).padStart(2, '0');
+                } else {
+                    document.getElementById('logistiqueDureeCalculee').value = 'Erreur: Date fin avant date arrivée';
+                }
+            } else {
+                document.getElementById('logistiqueDureeCalculee').value = '--:--';
+            }
+
+            // Calculate tariff
+            const tarifPropose = calculateTarif(dateHeureArrivee, dateHeureFin);
+
+            if (tarifPropose !== null) {
+                document.getElementById('logistiqueTarifPropose').value = tarifPropose.toFixed(2) + ' DH';
+
+                // Auto-populate PriceBooking if empty
+                const priceBookingInput = document.getElementById('logistiquePriceBooking');
+                if (!priceBookingInput.value || priceBookingInput.value == 0) {
+                    priceBookingInput.value = tarifPropose.toFixed(2);
+                }
+            } else {
+                document.getElementById('logistiqueTarifPropose').value = '';
+            }
+        }
+
+        // Add event listeners for date changes
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('logistiqueDateHeureArrivee').addEventListener('change', updateTarifPropose);
+            document.getElementById('logistiqueDateHeureFin').addEventListener('change', updateTarifPropose);
+        });
+
+        // Apply proposed tariff to PriceBooking field
+        function applyProposedTarif() {
+            const tarifText = document.getElementById('logistiqueTarifPropose').value;
+            if (tarifText) {
+                // Extract number from "XXX.XX DH" format
+                const tarifValue = parseFloat(tarifText.replace(' DH', ''));
+                if (!isNaN(tarifValue)) {
+                    document.getElementById('logistiquePriceBooking').value = tarifValue.toFixed(2);
+                }
+            }
+        }
+
+        function saveLogistiqueInfo() {
+            const model = {
+                id: document.getElementById('logistiqueId').value ? parseInt(document.getElementById('logistiqueId').value) : 0,
+                idDepart: parseInt(document.getElementById('logistiqueIdDepart').value),
+                dateHeureArrivee: document.getElementById('logistiqueDateHeureArrivee').value || null,
+                dateHeureFin: document.getElementById('logistiqueDateHeureFin').value || null,
+                priceBooking: document.getElementById('logistiquePriceBooking').value ? parseFloat(document.getElementById('logistiquePriceBooking').value) : null
+            };
+
+            fetch('/EtatSuiviTransport/SaveLogistiqueInfo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(model)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                alert('Erreur lors de l\'enregistrement: ' + error);
+            });
+        }
+    </script>
+}
