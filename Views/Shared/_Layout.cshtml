@@ -149,6 +149,13 @@
                                     <span class="pe-nav-content">Validation & Voyages</span>
                                 </a>
                             </li>
+
+                            <li class="pe-slide pe-has-sub">
+                                <a asp-controller="EtatSuiviTransport" asp-action="Index" class="pe-nav-link">
+                                    <i class="ri-truck-line pe-nav-icon"></i>
+                                    <span class="pe-nav-content">État Transports Stock</span>
+                                </a>
+                            </li>
                         }
 
                         <!-- Administration (Admin only) -->
@@ -221,6 +228,13 @@
                             <a asp-controller="Voyage" asp-action="Index" class="pe-nav-link">
                                 <i class="ri-route-line pe-nav-icon"></i>
                                 <span class="pe-nav-content">Validation & Voyages</span>
+                            </a>
+                        </li>
+
+                        <li class="pe-slide pe-has-sub">
+                            <a asp-controller="EtatSuiviTransport" asp-action="Index" class="pe-nav-link">
+                                <i class="ri-truck-line pe-nav-icon"></i>
+                                <span class="pe-nav-content">État Transports Stock</span>
                             </a>
                         </li>
                     }
@@ -758,6 +772,9 @@
         </footer>
         <!-- END Footer -->
     </div>
+
+    @await RenderSectionAsync("Modals", required: false)
+
     <!-- END page -->
     <!-- JAVASCRIPT -->
     <script src="~/assets/libs/swiper/swiper-bundle.min.js"></script>
