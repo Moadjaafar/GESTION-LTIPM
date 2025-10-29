@@ -15,6 +15,8 @@ namespace GESTION_LTIPN.Data
         public DbSet<CamionStock> Camions { get; set; }
         public DbSet<PaletteTransfert> PaletteTransferts { get; set; }
         public DbSet<LogistiqueInfoStock> LogistiqueInfoStock { get; set; }
+        public DbSet<SuiveemareeRsw> SuiveemareeRsw { get; set; }
+        public DbSet<AnalyseRSW> AnalyseRSW { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -78,6 +80,26 @@ namespace GESTION_LTIPN.Data
 
                 entity.Property(e => e.DatetimeSaisie)
                       .HasDefaultValueSql("GETDATE()");
+            });
+
+            // Configure SuiveemareeRsw entity
+            modelBuilder.Entity<SuiveemareeRsw>(entity =>
+            {
+                entity.ToTable("SuiveemareeRsw");
+                entity.HasKey(e => e.idsvrsw);
+                entity.Property(e => e.Suppression).HasDefaultValue(false);
+            });
+
+            // Configure AnalyseRSW entity
+            modelBuilder.Entity<AnalyseRSW>(entity =>
+            {
+                entity.ToTable("AnalyseRSW");
+                entity.HasKey(e => e.idAnalyse);
+
+                entity.HasOne(e => e.SuiveeMaree)
+                      .WithMany(s => s.Analyses)
+                      .HasForeignKey(e => e.idsvrsw)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

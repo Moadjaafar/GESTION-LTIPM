@@ -108,13 +108,13 @@
             </div>
         </header>
         <aside class="pe-app-sidebar" id="sidebar">
-            <div class="pe-app-sidebar-logo px-5 d-flex align-items-center position-relative">
+            <div class="pe-app-sidebar-logo px-5 d-flex align-items-center justify-content-center position-relative">
                 <!--begin::Brand Image-->
-                <a href="" class="d-flex align-items-end logo-main">
-                    <img height="35" class="logo-dark" alt="Dark Logo" src="~/assets/images/favicon.png">
-                    <img height="35" class="logo-light" alt="Light Logo" src="~/assets/images/favicon.png">
-                    <h3 class="text-body-emphasis fw-bolder mb-1 ms-1 logo-txt">LTIPM</h3>
-                </a>
+                <a asp-controller="Home" asp-action="Index" class="d-flex align-items-center logo-main">
+                    <img height="60" width="90" class="logo-dark" alt="Dark Logo" src="~/assets/images/favicon.png">
+                    <img height="60" width="90" class="logo-light" alt="Light Logo" src="~/assets/images/favicon.png">
+@*                     <h3 class="text-body-emphasis fw-bolder mb-1 ms-1 logo-txt">LTIPM</h3>
+ *@                </a>
                 <button type="button" id="sidebarDefaultArrow" class="btn btn-sm p-0 fs-16 text-body-emphasis ms-auto float-end d-none icon-hover-btn d-none"><i class="ri-arrow-right-line fs-5"></i></button>
                 <!--end::Brand Image-->
             </div>
@@ -141,7 +141,7 @@
                         </li>
 
                         <!-- Validation & Voyages (Trans_Respo only) -->
-                        @if (User.IsInRole("Admin") || User.IsInRole("Trans_Respo"))
+                        @if (User.IsInRole("Admin"))
                         {
                             <li class="pe-slide pe-has-sub">
                                 <a asp-controller="Voyage" asp-action="Index" class="pe-nav-link">
@@ -154,6 +154,13 @@
                                 <a asp-controller="EtatSuiviTransport" asp-action="Index" class="pe-nav-link">
                                     <i class="ri-truck-line pe-nav-icon"></i>
                                     <span class="pe-nav-content">État Transports Stock</span>
+                                </a>
+                            </li>
+
+                            <li class="pe-slide pe-has-sub">
+                                <a asp-controller="EtatSuiviMaree" asp-action="Index" class="pe-nav-link">
+                                    <i class="ri-ship-line pe-nav-icon"></i>
+                                    <span class="pe-nav-content">État Suivi Marées RSW</span>
                                 </a>
                             </li>
                         }
@@ -235,6 +242,13 @@
                             <a asp-controller="EtatSuiviTransport" asp-action="Index" class="pe-nav-link">
                                 <i class="ri-truck-line pe-nav-icon"></i>
                                 <span class="pe-nav-content">État Transports Stock</span>
+                            </a>
+                        </li>
+
+                        <li class="pe-slide pe-has-sub">
+                            <a asp-controller="EtatSuiviMaree" asp-action="Index" class="pe-nav-link">
+                                <i class="ri-ship-line pe-nav-icon"></i>
+                                <span class="pe-nav-content">État Suivi Marées RSW</span>
                             </a>
                         </li>
                     }
