@@ -865,6 +865,7 @@ namespace GESTION_LTIPN.Controllers
             var viewModel = new VoyageViewModel
             {
                 VoyageId = voyage.VoyageId,
+                Numero_TC = voyage.Numero_TC,
                 BookingId = voyage.BookingId,
                 VoyageNumber = voyage.VoyageNumber,
                 BookingReference = voyage.Booking?.BookingReference,

@@ -1,0 +1,257 @@
+@model GESTION_LTIPN.Models.EtatSuiviVoyageViewModel
+
+@{
+    ViewData["Title"] = "État de suivi des voyages";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">État de suivi des voyages</h4>
+            </div>
+            <div class="card-body">
+                <!-- Filters Section -->
+                <form asp-action="Index" method="get">
+                    <div class="row mb-3">
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="DateDebut" class="form-label">Date Début</label>
+                            <input asp-for="DateDebut" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="DateFin" class="form-label">Date Fin</label>
+                            <input asp-for="DateFin" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="BookingReference" class="form-label">Référence Booking</label>
+                            <input asp-for="BookingReference" type="text" class="form-control" placeholder="Ex: BK20240129001" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="SocietyId" class="form-label">Société</label>
+                            <select asp-for="SocietyId" class="form-select">
+                                <option value="">-- Toutes les sociétés --</option>
+                                @foreach (var society in Model.Societies)
+                                {
+                                    <option value="@society.SocietyId">@society.SocietyName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="VoyageStatus" class="form-label">Statut Voyage</label>
+                            <select asp-for="VoyageStatus" class="form-select">
+                                <option value="">-- Tous les statuts --</option>
+                                @foreach (var status in Model.VoyageStatuses)
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="TypeVoyage" class="form-label">Type Voyage</label>
+                            <select asp-for="TypeVoyage" class="form-select">
+                                <option value="">-- Tous les types --</option>
+                                @foreach (var type in Model.TypeVoyages)
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="DepartureCity" class="form-label">Ville Départ</label>
+                            <select asp-for="DepartureCity" class="form-select">
+                                <option value="">-- Toutes les villes --</option>
+                                @foreach (var city in Model.DepartureCities)
+                                {
+                                    <option value="@city">@city</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ri-filter-line me-1"></i> Filtrer
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="ri-refresh-line me-1"></i> Réinitialiser
+                            </a>
+                        </div>
+                    </div>
+                </form>
+
+                @if (!string.IsNullOrEmpty(Model.FilteredTitle))
+                {
+                    <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+                        <i class="ri-information-line me-2"></i>
+                        <strong>@Model.FilteredTitle</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (Model.Voyages.Any())
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="badge bg-primary">
+                                <i class="ri-file-list-line me-1"></i>
+                                @Model.Voyages.Count() résultat(s)
+                            </span>
+                        </div>
+                        <a asp-action="ExportExcel" asp-all-route-data="@(new Dictionary<string, string>
+                            {
+                                { "dateDebut", Model.DateDebut?.ToString("yyyy-MM-dd") ?? "" },
+                                { "dateFin", Model.DateFin?.ToString("yyyy-MM-dd") ?? "" },
+                                { "bookingReference", Model.BookingReference ?? "" },
+                                { "societyId", Model.SocietyId?.ToString() ?? "" },
+                                { "voyageStatus", Model.VoyageStatus ?? "" },
+                                { "typeVoyage", Model.TypeVoyage ?? "" },
+                                { "departureCity", Model.DepartureCity ?? "" }
+                            })" class="btn btn-success">
+                            <i class="ri-file-excel-2-line me-1"></i> Export Excel
+                        </a>
+                    </div>
+
+                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                        <table class="table table-hover table-bordered align-middle mb-0 table-sm">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 10; background-color: #f8f9fa;">
+                                <tr>
+                                    <th class="text-center">N° d'opération</th>
+                                    <th>Type d'opération</th>
+                                    <th>Date début OP</th>
+                                    <th>Booking / N° Dossier</th>
+                                    <th>Client</th>
+                                    <th>N° TC</th>
+                                    <th>Matricule</th>
+                                    <th>Chauffeur</th>
+                                    <th>Article</th>
+                                    <th>Trajet</th>
+                                    <th class="text-end">Prix (MAD)</th>
+                                    <th>Date FIN OP</th>
+                                    <th>Statut</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{int operationNumber = 1;}
+                                @foreach (var item in Model.Voyages)
+                                {
+                                    <tr>
+                                        <td class="text-center"><strong>@operationNumber</strong></td>
+                                        <td>
+                                            <span class="badge bg-success">@item.TypeVoyage</span>
+                                        </td>
+                                        <td>@item.DepartureDate</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.BookingReference))
+                                            {
+                                                <span class="badge bg-primary">@item.BookingReference</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">----</span>
+                                            }
+                                        </td>
+                                        <td><strong>@item.SocietyPrincipale</strong></td>
+                                        <td><small class="text-muted">@item.Numero_TC</small></td>
+                                        <td>
+                                            <span class="badge bg-dark">@item.CamionFirstMatricule</span>
+                                        </td>
+                                        <td><small>@item.CamionFirstDriver</small></td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.Type_Emballage))
+                                            {
+                                                <strong class="text-primary">@item.Type_Emballage</strong>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <small>
+                                                @if (!string.IsNullOrEmpty(item.DepartureCity) && !string.IsNullOrEmpty(item.ReturnArrivalCity))
+                                                {
+                                                    <text>@item.DepartureCity/DAKHLA/@item.ReturnArrivalCity</text>
+                                                }
+                                                else if (!string.IsNullOrEmpty(item.DepartureCity))
+                                                {
+                                                    <text>@item.DepartureCity/DAKHLA</text>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </small>
+                                        </td>
+                                        <td class="text-end">
+                                            @if (item.PricePrincipale.HasValue)
+                                            {
+                                                <strong>@item.PricePrincipale?.ToString("N1")</strong>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.ReturnArrivalDate))
+                                            {
+                                                @item.ReturnArrivalDate
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">///</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.VoyageStatus == "Completed")
+                                            {
+                                                <span class="badge bg-success">Terminé</span>
+                                            }
+                                            else if (item.VoyageStatus == "InProgress")
+                                            {
+                                                <span class="badge bg-warning">En Cours</span>
+                                            }
+                                            else if (item.VoyageStatus == "Planned")
+                                            {
+                                                <span class="badge bg-info">Planifié</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">@item.VoyageStatus</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <a asp-controller="Voyage" asp-action="Details" asp-route-id="@item.VoyageId"
+                                               class="btn btn-sm btn-outline-primary" title="Voir détails">
+                                                <i class="ri-eye-line"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    operationNumber++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else if (Model.DateDebut.HasValue || Model.DateFin.HasValue || !string.IsNullOrEmpty(Model.BookingReference) ||
+                         Model.SocietyId.HasValue || !string.IsNullOrEmpty(Model.VoyageStatus) || !string.IsNullOrEmpty(Model.TypeVoyage) ||
+                         !string.IsNullOrEmpty(Model.DepartureCity))
+                {
+                    <div class="alert alert-info text-center py-5" role="alert">
+                        <i class="ri-information-line fs-1 d-block mb-2"></i>
+                        <p class="mb-0">Aucun voyage trouvé pour les filtres sélectionnés.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="ri-ship-line fs-1 text-muted d-block mb-2"></i>
+                        <p class="text-muted mb-0">Utilisez les filtres ci-dessus pour rechercher des voyages</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
