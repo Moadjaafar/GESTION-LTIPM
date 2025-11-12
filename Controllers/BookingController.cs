@@ -54,7 +54,7 @@ namespace GESTION_LTIPN.Controllers
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync(),
-                TypeVoyages = new List<string> { "Congolé", "Conserve" }
+                TypeVoyages = new List<string> { "Congolé", "DRY" }
             };
 
             return View(viewModel);
@@ -72,7 +72,7 @@ namespace GESTION_LTIPN.Controllers
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync();
-                model.TypeVoyages = new List<string> { "Congolé", "Conserve" };
+                model.TypeVoyages = new List<string> { "Congolé", "DRY" };
                 return View(model);
             }
 
@@ -145,6 +145,7 @@ namespace GESTION_LTIPN.Controllers
         // POST: Booking/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var booking = await _context.Bookings.FindAsync(id);
@@ -154,22 +155,14 @@ namespace GESTION_LTIPN.Controllers
                 return NotFound();
             }
 
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var userRole = User.FindFirstValue(ClaimTypes.Role);
-
-            // Only creator or admin can delete
-            if (userRole != "Admin" && booking.CreatedByUserId != userId)
-            {
-                TempData["ErrorMessage"] = "Vous n'êtes pas autorisé à supprimer cette réservation.";
-                return RedirectToAction(nameof(Details), new { id });
-            }
-
             // Only pending bookings can be deleted
             if (booking.BookingStatus != "Pending")
             {
                 TempData["ErrorMessage"] = "Seules les réservations en attente peuvent être supprimées.";
                 return RedirectToAction(nameof(Details), new { id });
             }
+
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
             _context.Bookings.Remove(booking);
             await _context.SaveChangesAsync();
@@ -178,6 +171,234 @@ namespace GESTION_LTIPN.Controllers
 
             TempData["SuccessMessage"] = $"Réservation {booking.BookingReference} supprimée avec succès.";
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Booking/Edit/5
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var booking = await _context.Bookings
+                .Include(b => b.Society)
+                .Include(b => b.Voyages)
+                .FirstOrDefaultAsync(b => b.BookingId == id);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            // Only allow editing pending bookings
+            if (booking.BookingStatus != "Pending")
+            {
+                TempData["ErrorMessage"] = "Seules les réservations en attente peuvent être modifiées.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var viewModel = new BookingViewModel
+            {
+                BookingId = booking.BookingId,
+                BookingReference = booking.BookingReference,
+                Numero_BK = booking.Numero_BK,
+                SocietyId = booking.SocietyId,
+                TypeVoyage = booking.TypeVoyage!,
+                Nbr_LTC = booking.Nbr_LTC,
+                Notes = booking.Notes,
+                Societies = await _context.Societies
+                    .Where(s => s.IsActive)
+                    .OrderBy(s => s.SocietyName)
+                    .ToListAsync(),
+                TypeVoyages = new List<string> { "Congolé", "DRY" }
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Booking/Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(BookingViewModel model)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Voyages)
+                .FirstOrDefaultAsync(b => b.BookingId == model.BookingId);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            // Only allow editing pending bookings
+            if (booking.BookingStatus != "Pending")
+            {
+                TempData["ErrorMessage"] = "Seules les réservations en attente peuvent être modifiées.";
+                return RedirectToAction(nameof(Details), new { id = model.BookingId });
+            }
+
+            // Validate: Cannot decrease Nbr_LTC if voyages already exist
+            if (booking.Voyages.Count > 0 && model.Nbr_LTC < booking.Voyages.Count)
+            {
+                ModelState.AddModelError("Nbr_LTC", $"Impossible de réduire le nombre de LTC en dessous de {booking.Voyages.Count} car des voyages existent déjà.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.Societies = await _context.Societies
+                    .Where(s => s.IsActive)
+                    .OrderBy(s => s.SocietyName)
+                    .ToListAsync();
+                model.TypeVoyages = new List<string> { "Congolé", "DRY" };
+                return View(model);
+            }
+
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            // Update booking fields
+            booking.Numero_BK = model.Numero_BK;
+            booking.SocietyId = model.SocietyId;
+            booking.TypeVoyage = model.TypeVoyage;
+            booking.Nbr_LTC = model.Nbr_LTC;
+            booking.Notes = model.Notes;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Booking {BookingId} updated by user {UserId}", booking.BookingId, userId);
+
+            TempData["SuccessMessage"] = $"Réservation {booking.BookingReference} modifiée avec succès.";
+            return RedirectToAction(nameof(Details), new { id = booking.BookingId });
+        }
+
+        // GET: Booking/SuperEdit/5
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SuperEdit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var booking = await _context.Bookings
+                .Include(b => b.Society)
+                .Include(b => b.Voyages)
+                .FirstOrDefaultAsync(b => b.BookingId == id);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new SuperEditViewModel
+            {
+                BookingId = booking.BookingId,
+                BookingReference = booking.BookingReference,
+                Numero_BK = booking.Numero_BK,
+                SocietyId = booking.SocietyId,
+                TypeVoyage = booking.TypeVoyage!,
+                Nbr_LTC = booking.Nbr_LTC,
+                Notes = booking.Notes,
+                BookingStatus = booking.BookingStatus,
+                Voyages = booking.Voyages.OrderBy(v => v.VoyageNumber).Select(v => new VoyageEditItem
+                {
+                    VoyageId = v.VoyageId,
+                    VoyageNumber = v.VoyageNumber,
+                    Numero_TC = v.Numero_TC!,
+                    VoyageStatus = v.VoyageStatus,
+                    DepartureType = v.DepartureType,
+                    DepartureCity = v.DepartureCity,
+                    DepartureDate = v.DepartureDate,
+                    CanEdit = v.VoyageStatus == "Planned" // Only planned voyages can be edited
+                }).ToList(),
+                Societies = await _context.Societies
+                    .Where(s => s.IsActive)
+                    .OrderBy(s => s.SocietyName)
+                    .ToListAsync(),
+                TypeVoyages = new List<string> { "Congolé", "DRY" }
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Booking/SuperEdit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SuperEdit(SuperEditViewModel model)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Voyages)
+                .FirstOrDefaultAsync(b => b.BookingId == model.BookingId);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            // Validate: Cannot decrease Nbr_LTC below existing voyage count
+            if (booking.Voyages.Count > 0 && model.Nbr_LTC < booking.Voyages.Count)
+            {
+                ModelState.AddModelError("Nbr_LTC", $"Impossible de réduire le nombre de LTC en dessous de {booking.Voyages.Count} car des voyages existent déjà.");
+            }
+
+            // Validate Numero_TC uniqueness in voyages
+            if (model.Voyages != null && model.Voyages.Any())
+            {
+                var numeroTCs = model.Voyages.Select(v => v.Numero_TC).ToList();
+                var duplicateTCs = numeroTCs.GroupBy(x => x).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+
+                if (duplicateTCs.Any())
+                {
+                    ModelState.AddModelError("", $"Numéros TC dupliqués détectés: {string.Join(", ", duplicateTCs)}");
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.Societies = await _context.Societies
+                    .Where(s => s.IsActive)
+                    .OrderBy(s => s.SocietyName)
+                    .ToListAsync();
+                model.TypeVoyages = new List<string> { "Congolé", "DRY" };
+                return View(model);
+            }
+
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            // Update booking fields (only if Pending)
+            if (booking.BookingStatus == "Pending")
+            {
+                booking.Numero_BK = model.Numero_BK;
+                booking.SocietyId = model.SocietyId;
+                booking.TypeVoyage = model.TypeVoyage;
+                booking.Nbr_LTC = model.Nbr_LTC;
+                booking.Notes = model.Notes;
+            }
+
+            // Update voyages (only Planned ones)
+            if (model.Voyages != null && model.Voyages.Any())
+            {
+                foreach (var voyageEdit in model.Voyages.Where(v => v.CanEdit))
+                {
+                    var voyage = booking.Voyages.FirstOrDefault(v => v.VoyageId == voyageEdit.VoyageId);
+                    if (voyage != null && voyage.VoyageStatus == "Planned")
+                    {
+                        // Only update Numero_TC, VoyageNumber is not editable
+                        voyage.Numero_TC = voyageEdit.Numero_TC;
+                        voyage.UpdatedAt = DateTime.Now;
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Booking {BookingId} and voyages super-edited by user {UserId}", booking.BookingId, userId);
+
+            TempData["SuccessMessage"] = $"Réservation {booking.BookingReference} et ses voyages modifiés avec succès.";
+            return RedirectToAction(nameof(Details), new { id = booking.BookingId });
         }
 
         // Helper method to generate unique booking reference

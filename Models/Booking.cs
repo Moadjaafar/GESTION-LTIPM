@@ -19,9 +19,8 @@ namespace GESTION_LTIPN.Models
         [Required]
         public int SocietyId { get; set; }
 
-        [Required]
         [StringLength(100)]
-        public string TypeVoyage { get; set; } = string.Empty;
+        public string? TypeVoyage { get; set; }
 
         [Required]
         public int Nbr_LTC { get; set; } // Number of voyages (LTC = Lot de Transport Camion)
@@ -31,9 +30,8 @@ namespace GESTION_LTIPN.Models
 
         public int? ValidatedByUserId { get; set; }
 
-        [Required]
         [StringLength(50)]
-        public string BookingStatus { get; set; } = "Pending"; // 'Pending', 'Validated', 'Completed', 'Cancelled'
+        public string? BookingStatus { get; set; } = "Pending"; // 'Pending', 'Validated', 'Completed', 'Cancelled'
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 

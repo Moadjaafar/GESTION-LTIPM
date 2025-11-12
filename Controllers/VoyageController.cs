@@ -140,9 +140,7 @@ namespace GESTION_LTIPN.Controllers
                 VoyageNumber = nextVoyageNumber,
                 BookingReference = booking.BookingReference,
                 SocietyPrincipaleId = booking.SocietyId, // Auto-set from booking
-                SocietyPrincipaleName = booking.Society?.SocietyName,
-                Societies = await _context.Societies.Where(s => s.IsActive).OrderBy(s => s.SocietyName).ToListAsync(),
-                DepartureTypes = new List<string> { "Emballage", "Empty" }
+                SocietyPrincipaleName = booking.Society?.SocietyName
             };
 
             return View(viewModel);
@@ -171,26 +169,7 @@ namespace GESTION_LTIPN.Controllers
             {
                 model.BookingReference = booking.BookingReference;
                 model.SocietyPrincipaleName = booking.Society?.SocietyName;
-                model.Societies = await _context.Societies.Where(s => s.IsActive).OrderBy(s => s.SocietyName).ToListAsync();
-                model.DepartureTypes = new List<string> { "Emballage", "Empty" };
                 return View(model);
-            }
-
-            // Validate business rules
-            if (model.DepartureType == "Emballage" && !model.SocietySecondaireId.HasValue)
-            {
-                ModelState.AddModelError("SocietySecondaireId", "La société secondaire est requise pour un départ de type Emballage.");
-                model.BookingReference = booking.BookingReference;
-                model.SocietyPrincipaleName = booking.Society?.SocietyName;
-                model.Societies = await _context.Societies.Where(s => s.IsActive).OrderBy(s => s.SocietyName).ToListAsync();
-                model.DepartureTypes = new List<string> { "Emballage", "Empty" };
-                return View(model);
-            }
-
-            if (model.DepartureType == "Empty" && model.SocietySecondaireId.HasValue)
-            {
-                model.SocietySecondaireId = null; // Force null for Empty type
-                model.Type_Emballage = null; // Clear Type_Emballage for Empty type
             }
 
             if (booking.Voyages.Count >= booking.Nbr_LTC)
@@ -205,9 +184,7 @@ namespace GESTION_LTIPN.Controllers
                 VoyageNumber = model.VoyageNumber,
                 Numero_TC = model.Numero_TC,
                 SocietyPrincipaleId = model.SocietyPrincipaleId,
-                SocietySecondaireId = model.SocietySecondaireId,
-                DepartureType = model.DepartureType,
-                Type_Emballage = model.Type_Emballage,
+                DepartureType = "Empty", // Default value, can be changed during departure
                 VoyageStatus = "Planned",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -281,16 +258,20 @@ namespace GESTION_LTIPN.Controllers
                 Numero_TC = voyage.Numero_TC,
                 BookingReference = voyage.Booking?.BookingReference,
                 SocietyPrincipaleName = voyage.SocietyPrincipale?.SocietyName,
+                SocietySecondaireId = voyage.SocietySecondaireId,
                 SocietySecondaireName = voyage.SocietySecondaire?.SocietyName,
                 CamionFirstDepart = voyage.CamionFirstDepart,
                 CamionFirstMatricule = voyage.CamionFirst?.CamionMatricule,
                 DepartureCity = voyage.DepartureCity,
                 DepartureType = voyage.DepartureType,
+                Type_Emballage = voyage.Type_Emballage,
                 DepartureDate = DateTime.Today,
                 DepartureTime = TimeSpan.FromHours(DateTime.Now.Hour).Add(TimeSpan.FromMinutes(DateTime.Now.Minute)),
+                Societies = await _context.Societies.Where(s => s.IsActive).OrderBy(s => s.SocietyName).ToListAsync(),
                 SocietiesTransp = await _context.SocietiesTransp.Where(s => s.IsActive).OrderBy(s => s.SocietyTranspName).ToListAsync(),
                 Camions = new List<Camion>(), // Will be loaded via AJAX
-                DepartureCities = new List<string> { "Agadir", "Casablanca" }
+                DepartureCities = new List<string> { "Agadir", "Casablanca" },
+                DepartureTypes = new List<string> { "Emballage", "Empty" }
             };
 
             return View(viewModel);
@@ -316,6 +297,24 @@ namespace GESTION_LTIPN.Controllers
                 return RedirectToAction(nameof(AssignVoyages), new { bookingId = voyage.BookingId });
             }
 
+            // Validate DepartureType
+            if (string.IsNullOrEmpty(model.DepartureType))
+            {
+                ModelState.AddModelError("DepartureType", "Le type de départ est requis.");
+            }
+
+            // Validate business rules for DepartureType
+            if (model.DepartureType == "Emballage" && !model.SocietySecondaireId.HasValue)
+            {
+                ModelState.AddModelError("SocietySecondaireId", "La société secondaire est requise pour un départ de type Emballage.");
+            }
+
+            if (model.DepartureType == "Empty" && model.SocietySecondaireId.HasValue)
+            {
+                model.SocietySecondaireId = null; // Force null for Empty type
+                model.Type_Emballage = null; // Clear Type_Emballage for Empty type
+            }
+
             if (!model.DepartureDate.HasValue)
             {
                 ModelState.AddModelError("DepartureDate", "La date de départ est requise.");
@@ -329,9 +328,21 @@ namespace GESTION_LTIPN.Controllers
             // Validate camion: either from society or externe
             if (model.IsFirstDepartExterne)
             {
-                if (string.IsNullOrWhiteSpace(model.CamionMatricule_FirstDepart_Externe))
+                if (string.IsNullOrWhiteSpace(model.ExterneSocietyTranspName_First))
                 {
-                    ModelState.AddModelError("CamionMatricule_FirstDepart_Externe", "Le matricule du camion externe est requis.");
+                    ModelState.AddModelError("ExterneSocietyTranspName_First", "Le nom de la société de transport est requis.");
+                }
+                if (string.IsNullOrWhiteSpace(model.ExterneCamionMatricule_First))
+                {
+                    ModelState.AddModelError("ExterneCamionMatricule_First", "Le matricule du camion est requis.");
+                }
+                if (string.IsNullOrWhiteSpace(model.ExterneDriverName_First))
+                {
+                    ModelState.AddModelError("ExterneDriverName_First", "Le nom du chauffeur est requis.");
+                }
+                if (string.IsNullOrWhiteSpace(model.ExterneDriverPhone_First))
+                {
+                    ModelState.AddModelError("ExterneDriverPhone_First", "Le téléphone du chauffeur est requis.");
                 }
             }
             else
@@ -356,27 +367,66 @@ namespace GESTION_LTIPN.Controllers
                 model.SocietyPrincipaleName = voyage.SocietyPrincipale?.SocietyName;
                 model.SocietySecondaireName = voyage.SocietySecondaire?.SocietyName;
                 model.CamionFirstMatricule = voyage.CamionFirst?.CamionMatricule;
-                model.DepartureCity = voyage.DepartureCity;
-                model.DepartureType = voyage.DepartureType;
+                model.Societies = await _context.Societies.Where(s => s.IsActive).OrderBy(s => s.SocietyName).ToListAsync();
                 model.SocietiesTransp = await _context.SocietiesTransp.Where(s => s.IsActive).OrderBy(s => s.SocietyTranspName).ToListAsync();
                 model.Camions = model.SocietyTranspFirstId.HasValue
                     ? await _context.Camions.Where(c => c.IsActive && c.SocietyTranspId == model.SocietyTranspFirstId).OrderBy(c => c.CamionMatricule).ToListAsync()
                     : new List<Camion>();
                 model.DepartureCities = new List<string> { "Agadir", "Casablanca" };
+                model.DepartureTypes = new List<string> { "Emballage", "Empty" };
 
                 return View(model);
             }
 
+            // Save DepartureType, SocietySecondaire, and Type_Emballage
+            voyage.DepartureType = model.DepartureType;
+            voyage.SocietySecondaireId = model.SocietySecondaireId;
+            voyage.Type_Emballage = model.Type_Emballage;
+
             // Save camion info based on type (externe or from society)
             if (model.IsFirstDepartExterne)
             {
-                voyage.CamionFirstDepart = null;
-                voyage.CamionMatricule_FirstDepart_Externe = model.CamionMatricule_FirstDepart_Externe;
+                // Create or get SocietyTransp
+                var societyTransp = await _context.SocietiesTransp
+                    .FirstOrDefaultAsync(s => s.SocietyTranspName == model.ExterneSocietyTranspName_First);
+
+                if (societyTransp == null)
+                {
+                    societyTransp = new SocietyTransp
+                    {
+                        SocietyTranspName = model.ExterneSocietyTranspName_First,
+                        Address = "N/A",
+                        City = "N/A",
+                        Phone = "N/A",
+                        Email = "N/A",
+                        IsActive = true,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now
+                    };
+                    _context.SocietiesTransp.Add(societyTransp);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Create Camion
+                var camion = new Camion
+                {
+                    CamionMatricule = model.ExterneCamionMatricule_First,
+                    DriverName = model.ExterneDriverName_First,
+                    DriverPhone = model.ExterneDriverPhone_First,
+                    CamionType = "EXTERNE",
+                    SocietyTranspId = societyTransp.SocietyTranspId,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+                _context.Camions.Add(camion);
+                await _context.SaveChangesAsync();
+
+                voyage.CamionFirstDepart = camion.CamionId;
             }
             else
             {
                 voyage.CamionFirstDepart = model.CamionFirstDepart;
-                voyage.CamionMatricule_FirstDepart_Externe = null;
             }
 
             voyage.DepartureCity = model.DepartureCity;
@@ -388,7 +438,7 @@ namespace GESTION_LTIPN.Controllers
             await _context.SaveChangesAsync();
 
             var camionInfo = model.IsFirstDepartExterne
-                ? $"externe ({model.CamionMatricule_FirstDepart_Externe})"
+                ? $"externe ({model.ExterneCamionMatricule_First})"
                 : $"ID {model.CamionFirstDepart}";
             _logger.LogInformation("Voyage {VoyageId} departed with truck {CamionInfo}", model.VoyageId, camionInfo);
 
@@ -610,9 +660,21 @@ namespace GESTION_LTIPN.Controllers
             // Validate camion: either from society or externe
             if (model.IsSecondDepartExterne)
             {
-                if (string.IsNullOrWhiteSpace(model.CamionMatricule_SecondDepart_Externe))
+                if (string.IsNullOrWhiteSpace(model.ExterneSocietyTranspName_Second))
                 {
-                    ModelState.AddModelError("CamionMatricule_SecondDepart_Externe", "Le matricule du camion externe est requis.");
+                    ModelState.AddModelError("ExterneSocietyTranspName_Second", "Le nom de la société de transport est requis.");
+                }
+                if (string.IsNullOrWhiteSpace(model.ExterneCamionMatricule_Second))
+                {
+                    ModelState.AddModelError("ExterneCamionMatricule_Second", "Le matricule du camion est requis.");
+                }
+                if (string.IsNullOrWhiteSpace(model.ExterneDriverName_Second))
+                {
+                    ModelState.AddModelError("ExterneDriverName_Second", "Le nom du chauffeur est requis.");
+                }
+                if (string.IsNullOrWhiteSpace(model.ExterneDriverPhone_Second))
+                {
+                    ModelState.AddModelError("ExterneDriverPhone_Second", "Le téléphone du chauffeur est requis.");
                 }
             }
             else
@@ -659,13 +721,47 @@ namespace GESTION_LTIPN.Controllers
             // Save camion info based on type (externe or from society)
             if (model.IsSecondDepartExterne)
             {
-                voyage.CamionSecondDepart = null;
-                voyage.CamionMatricule_SecondDepart_Externe = model.CamionMatricule_SecondDepart_Externe;
+                // Create or get SocietyTransp
+                var societyTransp = await _context.SocietiesTransp
+                    .FirstOrDefaultAsync(s => s.SocietyTranspName == model.ExterneSocietyTranspName_Second);
+
+                if (societyTransp == null)
+                {
+                    societyTransp = new SocietyTransp
+                    {
+                        SocietyTranspName = model.ExterneSocietyTranspName_Second,
+                        Address = "N/A",
+                        City = "N/A",
+                        Phone = "N/A",
+                        Email = "N/A",
+                        IsActive = true,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now
+                    };
+                    _context.SocietiesTransp.Add(societyTransp);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Create Camion
+                var camion = new Camion
+                {
+                    CamionMatricule = model.ExterneCamionMatricule_Second,
+                    DriverName = model.ExterneDriverName_Second,
+                    DriverPhone = model.ExterneDriverPhone_Second,
+                    CamionType = "EXTERNE",
+                    SocietyTranspId = societyTransp.SocietyTranspId,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+                _context.Camions.Add(camion);
+                await _context.SaveChangesAsync();
+
+                voyage.CamionSecondDepart = camion.CamionId;
             }
             else
             {
                 voyage.CamionSecondDepart = model.CamionSecondDepart;
-                voyage.CamionMatricule_SecondDepart_Externe = null;
             }
 
             voyage.ReturnDepartureDate = model.ReturnDepartureDate;
@@ -676,7 +772,7 @@ namespace GESTION_LTIPN.Controllers
             await _context.SaveChangesAsync();
 
             var camionInfo = model.IsSecondDepartExterne
-                ? $"externe ({model.CamionMatricule_SecondDepart_Externe})"
+                ? $"externe ({model.ExterneCamionMatricule_Second})"
                 : $"ID {model.CamionSecondDepart}";
             _logger.LogInformation("Voyage {VoyageId} return departure recorded with truck {CamionInfo}", model.VoyageId, camionInfo);
 
@@ -813,6 +909,7 @@ namespace GESTION_LTIPN.Controllers
         // POST: Voyage/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var voyage = await _context.Voyages
@@ -839,6 +936,102 @@ namespace GESTION_LTIPN.Controllers
 
             TempData["SuccessMessage"] = "Voyage supprimé avec succès.";
             return RedirectToAction(nameof(AssignVoyages), new { bookingId });
+        }
+
+        // GET: Voyage/Edit/5
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var voyage = await _context.Voyages
+                .Include(v => v.Booking)
+                .Include(v => v.SocietyPrincipale)
+                .FirstOrDefaultAsync(v => v.VoyageId == id);
+
+            if (voyage == null)
+            {
+                return NotFound();
+            }
+
+            // Only allow editing planned voyages
+            if (voyage.VoyageStatus != "Planned")
+            {
+                TempData["ErrorMessage"] = "Seuls les voyages planifiés peuvent être modifiés.";
+                return RedirectToAction(nameof(AssignVoyages), new { bookingId = voyage.BookingId });
+            }
+
+            var viewModel = new VoyageViewModel
+            {
+                VoyageId = voyage.VoyageId,
+                BookingId = voyage.BookingId,
+                VoyageNumber = voyage.VoyageNumber,
+                Numero_TC = voyage.Numero_TC,
+                SocietyPrincipaleId = voyage.SocietyPrincipaleId,
+                BookingReference = voyage.Booking?.BookingReference,
+                SocietyPrincipaleName = voyage.SocietyPrincipale?.SocietyName
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Voyage/Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(VoyageViewModel model)
+        {
+            var voyage = await _context.Voyages
+                .Include(v => v.Booking)
+                .FirstOrDefaultAsync(v => v.VoyageId == model.VoyageId);
+
+            if (voyage == null)
+            {
+                return NotFound();
+            }
+
+            // Only allow editing planned voyages
+            if (voyage.VoyageStatus != "Planned")
+            {
+                TempData["ErrorMessage"] = "Seuls les voyages planifiés peuvent être modifiés.";
+                return RedirectToAction(nameof(AssignVoyages), new { bookingId = voyage.BookingId });
+            }
+
+            // Get booking to validate
+            var booking = await _context.Bookings
+                .Include(b => b.Society)
+                .FirstOrDefaultAsync(b => b.BookingId == voyage.BookingId);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            // Auto-set SocietyPrincipaleId from booking
+            model.SocietyPrincipaleId = booking.SocietyId;
+
+            if (!ModelState.IsValid)
+            {
+                model.BookingReference = booking.BookingReference;
+                model.SocietyPrincipaleName = booking.Society?.SocietyName;
+                return View(model);
+            }
+
+            // Update voyage fields
+            voyage.VoyageNumber = model.VoyageNumber;
+            voyage.Numero_TC = model.Numero_TC;
+            voyage.SocietyPrincipaleId = model.SocietyPrincipaleId;
+            voyage.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Voyage {VoyageId} updated", voyage.VoyageId);
+
+            TempData["SuccessMessage"] = $"Voyage #{model.VoyageNumber} modifié avec succès.";
+            return RedirectToAction(nameof(AssignVoyages), new { bookingId = voyage.BookingId });
         }
 
         // GET: Voyage/AssignPrices/5

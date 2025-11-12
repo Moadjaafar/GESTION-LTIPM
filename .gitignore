@@ -448,3 +448,6 @@ nul
 # Project specific
 # Add any project-specific files you want to ignore below
 # Example: wwwroot/uploads/*
+
+# Claude Code
+.claude/

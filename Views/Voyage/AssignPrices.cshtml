@@ -75,9 +75,13 @@
                                         {
                                             <span class="badge bg-info">Emballage</span>
                                         }
-                                        else
+                                        else if (Model.DepartureType == "Empty")
                                         {
                                             <span class="badge bg-warning">Empty</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Non défini</span>
                                         }
                                     </p>
                                 </div>

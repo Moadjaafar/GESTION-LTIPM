@@ -145,9 +145,9 @@ namespace GESTION_LTIPN.Controllers
                     dureeTotale = $"{(int)duree.TotalHours}h {duree.Minutes}m";
                 }
 
-                // Get truck matricules (internal or external)
-                var camionFirstMatricule = voyage.CamionFirst?.CamionMatricule ?? voyage.CamionMatricule_FirstDepart_Externe ?? "-";
-                var camionSecondMatricule = voyage.CamionSecond?.CamionMatricule ?? voyage.CamionMatricule_SecondDepart_Externe ?? "-";
+                // Get truck matricules
+                var camionFirstMatricule = voyage.CamionFirst?.CamionMatricule ?? "-";
+                var camionSecondMatricule = voyage.CamionSecond?.CamionMatricule ?? "-";
 
                 // If voyage has secondary society (Emballage), create TWO separate operations
                 if (voyage.SocietySecondaireId.HasValue && voyage.SocietySecondaire != null)

@@ -122,11 +122,9 @@ namespace GESTION_LTIPN.Data
                 entity.HasKey(e => e.VoyageId);
                 entity.Property(e => e.Numero_TC).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.DepartureCity).HasMaxLength(50); // Nullable now
-                entity.Property(e => e.DepartureType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.DepartureType).HasMaxLength(50);
                 entity.Property(e => e.Type_Emballage).HasMaxLength(200);
-                entity.Property(e => e.CamionMatricule_FirstDepart_Externe).HasMaxLength(50);
-                entity.Property(e => e.CamionMatricule_SecondDepart_Externe).HasMaxLength(50);
-                entity.Property(e => e.VoyageStatus).IsRequired().HasMaxLength(50).HasDefaultValue("Planned");
+                entity.Property(e => e.VoyageStatus).HasMaxLength(50).HasDefaultValue("Planned");
                 entity.Property(e => e.Currency).HasMaxLength(10).HasDefaultValue("MAD");
                 entity.Property(e => e.PricePrincipale).HasColumnType("decimal(18, 2)");
                 entity.Property(e => e.PriceSecondaire).HasColumnType("decimal(18, 2)");

@@ -26,14 +26,24 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0">Réservation @Model.BookingReference</h4>
                 <div class="d-flex gap-2">
-                    @if (Model.BookingStatus == "Pending")
+                    @if (User.IsInRole("Admin"))
                     {
-                        <form asp-action="Delete" asp-route-id="@Model.BookingId" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ? Cette action est irréversible.')">
-                                <i class="ri-delete-bin-line me-1"></i> Supprimer
-                            </button>
-                        </form>
+                        <a asp-action="SuperEdit" asp-route-id="@Model.BookingId" class="btn btn-primary btn-sm">
+                            <i class="ri-edit-box-line me-1"></i> Super Modification
+                        </a>
+
+                        @if (Model.BookingStatus == "Pending")
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.BookingId" class="btn btn-warning btn-sm">
+                                <i class="ri-edit-line me-1"></i> Modifier
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@Model.BookingId" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ? Cette action est irréversible.')">
+                                    <i class="ri-delete-bin-line me-1"></i> Supprimer
+                                </button>
+                            </form>
+                        }
                     }
                     <a asp-action="Index" class="btn btn-secondary btn-sm">
                         <i class="ri-arrow-left-line me-1"></i> Retour
@@ -205,9 +215,13 @@
                                             {
                                                 <span class="badge bg-info">Emballage</span>
                                             }
-                                            else
+                                            else if (voyage.DepartureType == "Empty")
                                             {
                                                 <span class="badge bg-warning">Empty</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Non défini</span>
                                             }
                                         </td>
                                         <td>

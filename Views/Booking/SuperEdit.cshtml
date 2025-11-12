@@ -1,0 +1,308 @@
+@model GESTION_LTIPN.Models.SuperEditViewModel
+
+@{
+    ViewData["Title"] = "Super Modification";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <form asp-action="SuperEdit" method="post">
+            <input type="hidden" asp-for="BookingId" />
+            <input type="hidden" asp-for="BookingReference" />
+            <input type="hidden" asp-for="BookingStatus" />
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- Booking Section -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="ri-file-list-3-line me-2"></i>
+                        Réservation @Model.BookingReference
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.BookingStatus != "Pending")
+                    {
+                        <div class="alert alert-warning">
+                            <i class="ri-alert-line me-1"></i>
+                            <strong>Attention:</strong> Cette réservation n'est pas en statut "En attente".
+                            Les champs de réservation ne seront pas modifiables. Seuls les voyages planifiés peuvent être modifiés.
+                        </div>
+                    }
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="SocietyId" class="form-label">Société <span class="text-danger">*</span></label>
+                            @if (Model.BookingStatus != "Pending")
+                            {
+                                <select asp-for="SocietyId" class="form-select" disabled>
+                                    <option value="">-- Sélectionnez une société --</option>
+                                    @if (Model.Societies != null)
+                                    {
+                                        @foreach (var society in Model.Societies)
+                                        {
+                                            <option value="@society.SocietyId">@society.SocietyName</option>
+                                        }
+                                    }
+                                </select>
+                            }
+                            else
+                            {
+                                <select asp-for="SocietyId" class="form-select">
+                                    <option value="">-- Sélectionnez une société --</option>
+                                    @if (Model.Societies != null)
+                                    {
+                                        @foreach (var society in Model.Societies)
+                                        {
+                                            <option value="@society.SocietyId">@society.SocietyName</option>
+                                        }
+                                    }
+                                </select>
+                            }
+                            <span asp-validation-for="SocietyId" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="TypeVoyage" class="form-label">Type de voyage <span class="text-danger">*</span></label>
+                            @if (Model.BookingStatus != "Pending")
+                            {
+                                <select asp-for="TypeVoyage" class="form-select" disabled>
+                                    <option value="">-- Sélectionnez --</option>
+                                    @if (Model.TypeVoyages != null)
+                                    {
+                                        @foreach (var type in Model.TypeVoyages)
+                                        {
+                                            <option value="@type">@type</option>
+                                        }
+                                    }
+                                </select>
+                            }
+                            else
+                            {
+                                <select asp-for="TypeVoyage" class="form-select">
+                                    <option value="">-- Sélectionnez --</option>
+                                    @if (Model.TypeVoyages != null)
+                                    {
+                                        @foreach (var type in Model.TypeVoyages)
+                                        {
+                                            <option value="@type">@type</option>
+                                        }
+                                    }
+                                </select>
+                            }
+                            <span asp-validation-for="TypeVoyage" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="Nbr_LTC" class="form-label">Nombre de LTC <span class="text-danger">*</span></label>
+                            @if (Model.BookingStatus != "Pending")
+                            {
+                                <input asp-for="Nbr_LTC" type="number" class="form-control" min="1" max="100" readonly>
+                            }
+                            else
+                            {
+                                <input asp-for="Nbr_LTC" type="number" class="form-control" min="1" max="100">
+                            }
+                            <span asp-validation-for="Nbr_LTC" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Numero_BK" class="form-label">Numéro BK <span class="text-danger">*</span></label>
+                            @if (Model.BookingStatus != "Pending")
+                            {
+                                <input asp-for="Numero_BK" type="text" class="form-control" maxlength="50" readonly>
+                            }
+                            else
+                            {
+                                <input asp-for="Numero_BK" type="text" class="form-control" maxlength="50">
+                            }
+                            <span asp-validation-for="Numero_BK" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Statut</label>
+                            <input type="text" class="form-control" value="@Model.BookingStatus" readonly disabled>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Notes" class="form-label">Notes</label>
+                        @if (Model.BookingStatus != "Pending")
+                        {
+                            <textarea asp-for="Notes" class="form-control" rows="3" readonly></textarea>
+                        }
+                        else
+                        {
+                            <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                        }
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voyages Section -->
+            <div class="card mt-3">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="ri-route-line me-2"></i>
+                        Voyages (@Model.Voyages.Count)
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.Voyages.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 80px;">Voyage #</th>
+                                        <th style="width: 150px;">Numéro TC <span class="text-danger">*</span></th>
+                                        <th style="width: 120px;">Statut</th>
+                                        <th style="width: 120px;">Type Départ</th>
+                                        <th style="width: 120px;">Ville Départ</th>
+                                        <th style="width: 140px;">Date Départ</th>
+                                        <th style="width: 100px;">Modifiable</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < Model.Voyages.Count; i++)
+                                    {
+                                        var voyage = Model.Voyages[i];
+                                        var rowClass = voyage.CanEdit ? "table-success-subtle" : "";
+
+                                        <tr class="@rowClass">
+                                            <td>
+                                                <input type="hidden" asp-for="Voyages[i].VoyageId" />
+                                                <input type="hidden" asp-for="Voyages[i].VoyageStatus" />
+                                                <input type="hidden" asp-for="Voyages[i].CanEdit" />
+                                                <input type="hidden" asp-for="Voyages[i].VoyageNumber" />
+                                                <span class="fw-bold">@voyage.VoyageNumber</span>
+                                            </td>
+                                            <td>
+                                                @if (voyage.CanEdit)
+                                                {
+                                                    <input type="text" asp-for="Voyages[i].Numero_TC" class="form-control form-control-sm" maxlength="100" required />
+                                                }
+                                                else
+                                                {
+                                                    <input type="text" asp-for="Voyages[i].Numero_TC" class="form-control form-control-sm" maxlength="100" readonly />
+                                                }
+                                                <span asp-validation-for="Voyages[i].Numero_TC" class="text-danger small"></span>
+                                            </td>
+                                            <td>
+                                                <span class="badge @(voyage.VoyageStatus switch
+                                                {
+                                                    "Planned" => "bg-secondary",
+                                                    "InProgress" => "bg-warning",
+                                                    "Completed" => "bg-success",
+                                                    _ => "bg-info"
+                                                })">
+                                                    @(voyage.VoyageStatus switch
+                                                    {
+                                                        "Planned" => "Planifié",
+                                                        "InProgress" => "En cours",
+                                                        "Completed" => "Terminé",
+                                                        _ => voyage.VoyageStatus
+                                                    })
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="small">@(voyage.DepartureType ?? "-")</span>
+                                            </td>
+                                            <td>
+                                                <span class="small">@(voyage.DepartureCity ?? "-")</span>
+                                            </td>
+                                            <td>
+                                                <span class="small">@(voyage.DepartureDate?.ToString("dd/MM/yyyy") ?? "-")</span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if (voyage.CanEdit)
+                                                {
+                                                    <i class="ri-edit-box-line text-success fs-5" title="Modifiable"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="ri-lock-line text-danger fs-5" title="Non modifiable"></i>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="alert alert-info mt-3 mb-0">
+                            <i class="ri-information-line me-1"></i>
+                            <strong>Info:</strong> Seuls les voyages au statut <span class="badge bg-secondary">Planifié</span> peuvent être modifiés.
+                            Les voyages en cours ou terminés sont en lecture seule.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="ri-route-line fs-1 d-block mb-2"></i>
+                            <p>Aucun voyage associé à cette réservation</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a asp-action="Details" asp-route-id="@Model.BookingId" class="btn btn-secondary">
+                            <i class="ri-arrow-left-line me-1"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ri-save-line me-1"></i> Enregistrer toutes les modifications
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="card mt-3 border-warning">
+                <div class="card-body bg-warning-subtle">
+                    <h6 class="fw-semibold mb-2">
+                        <i class="ri-lightbulb-line me-1 text-warning"></i>
+                        Conseils d'utilisation
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li><strong>Réservation:</strong> Ne peut être modifiée que si le statut est "En attente"</li>
+                        <li><strong>Voyages:</strong> Seuls les voyages "Planifiés" (surlignés en vert) peuvent être modifiés</li>
+                        <li><strong>Champs modifiables:</strong> Pour les voyages planifiés, seul le Numéro TC peut être modifié</li>
+                        <li><strong>Numéros TC:</strong> Doivent être uniques au sein de la réservation</li>
+                        <li><strong>Nombre de LTC:</strong> Ne peut pas être inférieur au nombre de voyages existants</li>
+                        <li>Cette page permet une modification globale - toutes les modifications sont enregistrées en une seule fois</li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        // Optional: Add confirmation before submitting
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const editableVoyages = document.querySelectorAll('input[name$=".CanEdit"][value="true"]').length;
+            if (editableVoyages > 0) {
+                if (!confirm(`Vous êtes sur le point de modifier la réservation et ${editableVoyages} voyage(s). Continuer ?`)) {
+                    e.preventDefault();
+                }
+            }
+        });
+    </script>
+}

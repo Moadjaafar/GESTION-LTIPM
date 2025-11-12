@@ -1,0 +1,107 @@
+@model GESTION_LTIPN.Models.BookingViewModel
+
+@{
+    ViewData["Title"] = "Modifier une réservation";
+}
+
+<div class="row">
+    <div class="col-12 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Modifier la réservation @Model.BookingReference</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="BookingId" />
+                    <input type="hidden" asp-for="BookingReference" />
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <div asp-validation-summary="All" class="text-danger"></div>
+                        </div>
+                    }
+
+                    <div class="alert alert-info">
+                        <i class="ri-information-line me-1"></i>
+                        Référence: <strong>@Model.BookingReference</strong>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="SocietyId" class="form-label">Société <span class="text-danger">*</span></label>
+                        <select asp-for="SocietyId" class="form-select" required>
+                            <option value="">-- Sélectionnez une société --</option>
+                            @if (Model.Societies != null)
+                            {
+                                @foreach (var society in Model.Societies)
+                                {
+                                    <option value="@society.SocietyId">@society.SocietyName</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="SocietyId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="TypeVoyage" class="form-label">Type de voyage <span class="text-danger">*</span></label>
+                        <select asp-for="TypeVoyage" class="form-select" required>
+                            <option value="">-- Sélectionnez un type --</option>
+                            @if (Model.TypeVoyages != null)
+                            {
+                                @foreach (var type in Model.TypeVoyages)
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="TypeVoyage" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Nbr_LTC" class="form-label">Nombre de LTC (Lot de Transport Camion) <span class="text-danger">*</span></label>
+                        <input asp-for="Nbr_LTC" type="number" class="form-control" min="1" max="100" placeholder="Entrez le nombre de voyages" required>
+                        <span asp-validation-for="Nbr_LTC" class="text-danger"></span>
+                        <small class="text-muted">Nombre de voyages à effectuer pour cette réservation (ne peut pas être inférieur au nombre de voyages existants)</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Numero_BK" class="form-label">Numéro BK <span class="text-danger">*</span></label>
+                        <input asp-for="Numero_BK" type="text" class="form-control" maxlength="50" placeholder="Entrez le numéro BK" required>
+                        <span asp-validation-for="Numero_BK" class="text-danger"></span>
+                        <small class="text-muted">Numéro de référence supplémentaire obligatoire</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Notes" class="form-label">Notes</label>
+                        <textarea asp-for="Notes" class="form-control" rows="4" placeholder="Notes additionnelles (optionnel)"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a asp-action="Details" asp-route-id="@Model.BookingId" class="btn btn-secondary">
+                            <i class="ri-arrow-left-line me-1"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ri-save-line me-1"></i> Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body bg-light-subtle">
+                <h6 class="fw-semibold mb-2"><i class="ri-information-line me-1"></i> Informations</h6>
+                <ul class="mb-0 small text-muted">
+                    <li>Seules les réservations au statut <strong>"En attente"</strong> peuvent être modifiées</li>
+                    <li>La référence de réservation ne peut pas être modifiée</li>
+                    <li>Le nombre de LTC ne peut pas être réduit en dessous du nombre de voyages déjà créés</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
