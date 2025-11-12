@@ -143,9 +143,13 @@
                                     {
                                         <span class="badge bg-info">Emballage</span>
                                     }
-                                    else
+                                    else if (Model.DepartureType == "Empty")
                                     {
                                         <span class="badge bg-secondary">Vide</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Non défini</span>
                                     }
                                 </td>
                             </tr>

@@ -15,7 +15,6 @@
                     <input type="hidden" asp-for="VoyageId" />
                     <input type="hidden" asp-for="BookingId" />
                     <input type="hidden" asp-for="VoyageNumber" />
-                    <input type="hidden" asp-for="DepartureType" />
                     <input type="hidden" asp-for="Numero_TC" />
 
                     @if (!ViewData.ModelState.IsValid)
@@ -35,32 +34,54 @@
                         <div class="card-body">
                             <h6 class="fw-semibold mb-3">Informations du voyage</h6>
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-12 mb-3">
                                     <label class="form-label text-muted small">Société principale</label>
                                     <p class="mb-0">@Model.SocietyPrincipaleName</p>
                                 </div>
-                                @if (!string.IsNullOrEmpty(Model.SocietySecondaireName))
-                                {
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label text-muted small">Société secondaire</label>
-                                        <p class="mb-0">@Model.SocietySecondaireName</p>
-                                    </div>
-                                }
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label text-muted small">Type de départ</label>
-                                    <p class="mb-0">
-                                        @if (Model.DepartureType == "Emballage")
-                                        {
-                                            <span class="badge bg-info">Emballage</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">Empty</span>
-                                        }
-                                    </p>
-                                </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Type de départ - Must be selected first -->
+                    <div class="mb-4">
+                        <label asp-for="DepartureType" class="form-label">Type de départ <span class="text-danger">*</span></label>
+                        <select asp-for="DepartureType" class="form-select" id="departureType" required>
+                            <option value="">-- Sélectionnez un type --</option>
+                            @if (Model.DepartureTypes != null)
+                            {
+                                @foreach (var type in Model.DepartureTypes)
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="DepartureType" class="text-danger"></span>
+                    </div>
+
+                    <!-- Society Secondaire (Only visible if Emballage) -->
+                    <div class="mb-4" id="societySecondaireContainer" style="display: none;">
+                        <label asp-for="SocietySecondaireId" class="form-label">
+                            Société secondaire <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="SocietySecondaireId" class="form-select" id="societySecondaire">
+                            <option value="">-- Sélectionnez une société --</option>
+                            @if (Model.Societies != null)
+                            {
+                                @foreach (var society in Model.Societies)
+                                {
+                                    <option value="@society.SocietyId">@society.SocietyName</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="SocietySecondaireId" class="text-danger"></span>
+                    </div>
+
+                    <!-- Type d'emballage (Only visible if Emballage) -->
+                    <div class="mb-4" id="typeEmballageContainer" style="display: none;">
+                        <label asp-for="Type_Emballage" class="form-label">Type d'emballage</label>
+                        <input asp-for="Type_Emballage" type="text" class="form-control" id="typeEmballage" maxlength="200" placeholder="Entrez le type d'emballage" />
+                        <span asp-validation-for="Type_Emballage" class="text-danger"></span>
+                        <small class="text-muted">Précisez le type d'emballage utilisé (ex: Carton, Palettes, etc.)</small>
                     </div>
 
                     <!-- Departure Information -->
@@ -111,13 +132,31 @@
                         </div>
                     </div>
 
-                    <!-- Externe matricule section (show when externe) -->
-                    <div class="row" id="externeSection" style="display: none;">
-                        <div class="col-md-6 mb-4">
-                            <label asp-for="CamionMatricule_FirstDepart_Externe" class="form-label">Matricule du camion externe <span class="text-danger">*</span></label>
-                            <input asp-for="CamionMatricule_FirstDepart_Externe" type="text" class="form-control" id="matriculeExterne" maxlength="50" placeholder="Ex: A-12345-B">
-                            <span asp-validation-for="CamionMatricule_FirstDepart_Externe" class="text-danger"></span>
-                            <small class="text-muted">Pour camions utilisés une seule fois</small>
+                    <!-- Externe camion section (show when externe) -->
+                    <div id="externeSection" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="ExterneSocietyTranspName_First" class="form-label">Nom société de transport <span class="text-danger">*</span></label>
+                                <input asp-for="ExterneSocietyTranspName_First" type="text" class="form-control" maxlength="200" placeholder="Ex: Transport XYZ">
+                                <span asp-validation-for="ExterneSocietyTranspName_First" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="ExterneCamionMatricule_First" class="form-label">Matricule camion <span class="text-danger">*</span></label>
+                                <input asp-for="ExterneCamionMatricule_First" type="text" class="form-control" maxlength="50" placeholder="Ex: A-12345-B">
+                                <span asp-validation-for="ExterneCamionMatricule_First" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="ExterneDriverName_First" class="form-label">Nom chauffeur <span class="text-danger">*</span></label>
+                                <input asp-for="ExterneDriverName_First" type="text" class="form-control" maxlength="100" placeholder="Ex: Ahmed Ali">
+                                <span asp-validation-for="ExterneDriverName_First" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="ExterneDriverPhone_First" class="form-label">Téléphone chauffeur <span class="text-danger">*</span></label>
+                                <input asp-for="ExterneDriverPhone_First" type="text" class="form-control" maxlength="50" placeholder="Ex: +212-xxx-xxxx">
+                                <span asp-validation-for="ExterneDriverPhone_First" class="text-danger"></span>
+                            </div>
                         </div>
                     </div>
 
@@ -173,7 +212,41 @@
             const externeSection = document.getElementById('externeSection');
             const societyTranspSelect = document.getElementById('societyTranspFirst');
             const camionSelect = document.getElementById('camionFirst');
-            const matriculeExterneInput = document.getElementById('matriculeExterne');
+            const departureTypeSelect = document.getElementById('departureType');
+
+            // External camion inputs
+            const externeSocietyName = document.querySelector('[name="ExterneSocietyTranspName_First"]');
+            const externeCamionMatricule = document.querySelector('[name="ExterneCamionMatricule_First"]');
+            const externeDriverName = document.querySelector('[name="ExterneDriverName_First"]');
+            const externeDriverPhone = document.querySelector('[name="ExterneDriverPhone_First"]');
+
+            // Show/hide Society Secondaire and Type_Emballage based on Departure Type
+            function checkDepartureType() {
+                const societyContainer = document.getElementById('societySecondaireContainer');
+                const societySecondaire = document.getElementById('societySecondaire');
+                const typeEmballageContainer = document.getElementById('typeEmballageContainer');
+                const typeEmballage = document.getElementById('typeEmballage');
+
+                if (departureTypeSelect.value === 'Emballage') {
+                    // Show and make required
+                    societyContainer.style.display = 'block';
+                    societySecondaire.required = true;
+
+                    // Show Type_Emballage input
+                    typeEmballageContainer.style.display = 'block';
+                } else {
+                    // Hide and clear
+                    societyContainer.style.display = 'none';
+                    societySecondaire.required = false;
+                    societySecondaire.value = '';
+
+                    // Hide and clear Type_Emballage
+                    typeEmballageContainer.style.display = 'none';
+                    typeEmballage.value = '';
+                }
+            }
+
+            departureTypeSelect.addEventListener('change', checkDepartureType);
 
             // Toggle between society and externe sections
             function toggleCamionType() {
@@ -185,14 +258,23 @@
                     camionSelect.value = '';
                     societyTranspSelect.removeAttribute('required');
                     camionSelect.removeAttribute('required');
-                    // Set externe input as required
-                    matriculeExterneInput.setAttribute('required', 'required');
+                    // Set externe inputs as required
+                    externeSocietyName.setAttribute('required', 'required');
+                    externeCamionMatricule.setAttribute('required', 'required');
+                    externeDriverName.setAttribute('required', 'required');
+                    externeDriverPhone.setAttribute('required', 'required');
                 } else {
                     societySection.style.display = 'block';
                     externeSection.style.display = 'none';
-                    // Clear externe input and remove required
-                    matriculeExterneInput.value = '';
-                    matriculeExterneInput.removeAttribute('required');
+                    // Clear externe inputs and remove required
+                    externeSocietyName.value = '';
+                    externeCamionMatricule.value = '';
+                    externeDriverName.value = '';
+                    externeDriverPhone.value = '';
+                    externeSocietyName.removeAttribute('required');
+                    externeCamionMatricule.removeAttribute('required');
+                    externeDriverName.removeAttribute('required');
+                    externeDriverPhone.removeAttribute('required');
                     // Set society/camion as required
                     societyTranspSelect.setAttribute('required', 'required');
                     camionSelect.setAttribute('required', 'required');
@@ -244,6 +326,7 @@
 
             // Initialize on page load
             toggleCamionType();
+            checkDepartureType();
         });
     </script>
 }

@@ -1,19 +1,19 @@
 @model GESTION_LTIPN.Models.VoyageViewModel
 
 @{
-    ViewData["Title"] = "Créer un Voyage";
+    ViewData["Title"] = "Modifier un Voyage";
 }
 
 <div class="row">
     <div class="col-12 mx-auto">
         <div class="card">
             <div class="card-header">
-                <h4 class="card-title mb-0">Créer un nouveau voyage - @Model.BookingReference</h4>
+                <h4 class="card-title mb-0">Modifier le voyage - @Model.BookingReference</h4>
             </div>
             <div class="card-body">
-                <form asp-action="Create" method="post">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="VoyageId" />
                     <input type="hidden" asp-for="BookingId" />
-                    <input type="hidden" asp-for="VoyageNumber" />
 
                     @if (!ViewData.ModelState.IsValid)
                     {
@@ -24,7 +24,15 @@
 
                     <div class="alert alert-info">
                         <i class="ri-information-line me-1"></i>
-                        Voyage numéro <strong>@Model.VoyageNumber</strong>
+                        Modification du voyage numéro <strong>@Model.VoyageNumber</strong>
+                    </div>
+
+                    <!-- Voyage Number -->
+                    <div class="mb-4">
+                        <label asp-for="VoyageNumber" class="form-label">Numéro de Voyage <span class="text-danger">*</span></label>
+                        <input asp-for="VoyageNumber" type="number" class="form-control" placeholder="Entrez le numéro de voyage" required />
+                        <span asp-validation-for="VoyageNumber" class="text-danger"></span>
+                        <small class="text-muted">Numéro séquentiel du voyage dans la réservation</small>
                     </div>
 
                     <!-- Numero TC -->
@@ -40,7 +48,7 @@
                         <label class="form-label">Société principale</label>
                         <input type="text" class="form-control" value="@Model.SocietyPrincipaleName" readonly disabled />
                         <input type="hidden" asp-for="SocietyPrincipaleId" />
-                        <small class="text-muted">Société de la réservation</small>
+                        <small class="text-muted">Société de la réservation (non modifiable)</small>
                     </div>
 
                     <div class="d-flex gap-2 justify-content-end">
@@ -48,7 +56,7 @@
                             <i class="ri-arrow-left-line me-1"></i> Annuler
                         </a>
                         <button type="submit" class="btn btn-primary">
-                            <i class="ri-save-line me-1"></i> Créer le voyage
+                            <i class="ri-save-line me-1"></i> Enregistrer les modifications
                         </button>
                     </div>
                 </form>
@@ -57,12 +65,11 @@
 
         <div class="card mt-3">
             <div class="card-body bg-light-subtle">
-                <h6 class="fw-semibold mb-2"><i class="ri-information-line me-1"></i> Règles métier</h6>
+                <h6 class="fw-semibold mb-2"><i class="ri-information-line me-1"></i> Informations</h6>
                 <ul class="mb-0 small text-muted">
-                    <li>La <strong>société principale</strong> est automatiquement celle de la réservation</li>
-                    <li>Le <strong>type de départ, société secondaire et camions</strong> seront assignés lors du départ</li>
-                    <li>La <strong>ville et date de départ</strong> seront saisies au moment du départ réel</li>
-                    <li>La destination finale est toujours <strong>Dakhla</strong></li>
+                    <li>Seuls les voyages au statut <strong>"Planifié"</strong> peuvent être modifiés</li>
+                    <li>La <strong>société principale</strong> est automatiquement celle de la réservation et ne peut pas être modifiée</li>
+                    <li>Les informations de <strong>départ, camions et dates</strong> sont modifiables dans leurs sections respectives</li>
                 </ul>
             </div>
         </div>

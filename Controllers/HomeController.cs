@@ -46,23 +46,26 @@ namespace GESTION_LTIPN.Controllers
                 ActiveCamions = await _context.Camions.CountAsync(c => c.IsActive),
             };
 
-            // Bookings by Status
+            // Bookings by Status (exclude null statuses)
             viewModel.BookingsByStatus = await _context.Bookings
+                .Where(b => b.BookingStatus != null)
                 .GroupBy(b => b.BookingStatus)
                 .Select(g => new { Status = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.Status, x => x.Count);
+                .ToDictionaryAsync(x => x.Status!, x => x.Count);
 
-            // Bookings by Type Voyage
+            // Bookings by Type Voyage (exclude null types)
             viewModel.BookingsByTypeVoyage = await _context.Bookings
+                .Where(b => b.TypeVoyage != null)
                 .GroupBy(b => b.TypeVoyage)
                 .Select(g => new { Type = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.Type, x => x.Count);
+                .ToDictionaryAsync(x => x.Type!, x => x.Count);
 
-            // Voyages by Status
+            // Voyages by Status (exclude null statuses)
             viewModel.VoyagesByStatus = await _context.Voyages
+                .Where(v => v.VoyageStatus != null)
                 .GroupBy(v => v.VoyageStatus)
                 .Select(g => new { Status = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.Status, x => x.Count);
+                .ToDictionaryAsync(x => x.Status!, x => x.Count);
 
             // Voyages by Departure City (exclude voyages without departure city)
             viewModel.VoyagesByDepartureCity = await _context.Voyages
@@ -71,11 +74,12 @@ namespace GESTION_LTIPN.Controllers
                 .Select(g => new { City = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.City!, x => x.Count);
 
-            // Voyages by Departure Type
+            // Voyages by Departure Type (exclude voyages without departure type)
             viewModel.VoyagesByDepartureType = await _context.Voyages
+                .Where(v => v.DepartureType != null)
                 .GroupBy(v => v.DepartureType)
                 .Select(g => new { Type = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.Type, x => x.Count);
+                .ToDictionaryAsync(x => x.Type!, x => x.Count);
 
             // Camions by Type
             viewModel.CamionsByType = await _context.Camions
@@ -97,6 +101,7 @@ namespace GESTION_LTIPN.Controllers
             // Recent Bookings
             viewModel.RecentBookings = await _context.Bookings
                 .Include(b => b.Society)
+                .Where(b => b.BookingReference != null && b.BookingStatus != null && b.TypeVoyage != null)
                 .OrderByDescending(b => b.CreatedAt)
                 .Take(5)
                 .Select(b => new RecentBooking
@@ -113,6 +118,7 @@ namespace GESTION_LTIPN.Controllers
             // Recent Voyages
             viewModel.RecentVoyages = await _context.Voyages
                 .Include(v => v.Booking)
+                .Where(v => v.VoyageStatus != null)
                 .OrderByDescending(v => v.CreatedAt)
                 .Take(5)
                 .Select(v => new RecentVoyage

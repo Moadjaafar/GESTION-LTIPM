@@ -147,9 +147,13 @@
                                             {
                                                 <span class="badge bg-info">Emballage</span>
                                             }
-                                            else
+                                            else if (voyage.DepartureType == "Empty")
                                             {
                                                 <span class="badge bg-secondary">Vide</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Non défini</span>
                                             }
                                         </td>
                                         <td>
@@ -250,16 +254,25 @@
                                                 @* Workflow-based actions *@
                                                 @if (voyage.VoyageStatus == "Planned")
                                                 {
+                                                    @if (User.IsInRole("Admin"))
+                                                    {
+                                                        <a asp-action="Edit" asp-route-id="@voyage.VoyageId" class="btn btn-sm btn-outline-warning" title="Modifier">
+                                                            <i class="ri-edit-line"></i>
+                                                        </a>
+                                                    }
                                                     @* Step 1: Record departure *@
                                                     <a asp-action="Depart" asp-route-id="@voyage.VoyageId" class="btn btn-sm btn-success" title="Enregistrer départ">
                                                         <i class="ri-plane-line"></i> Départ
                                                     </a>
-                                                    <form asp-action="Delete" asp-route-id="@voyage.VoyageId" method="post" class="d-inline">
-                                                        @Html.AntiForgeryToken()
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer" onclick="return confirm('Voulez-vous supprimer ce voyage ?')">
-                                                            <i class="ri-delete-bin-line"></i>
-                                                        </button>
-                                                    </form>
+                                                    @if (User.IsInRole("Admin"))
+                                                    {
+                                                        <form asp-action="Delete" asp-route-id="@voyage.VoyageId" method="post" class="d-inline">
+                                                            @Html.AntiForgeryToken()
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer" onclick="return confirm('Voulez-vous supprimer ce voyage ?')">
+                                                                <i class="ri-delete-bin-line"></i>
+                                                            </button>
+                                                        </form>
+                                                    }
                                                 }
                                                 else if (voyage.VoyageStatus == "InProgress")
                                                 {

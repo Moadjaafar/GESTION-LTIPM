@@ -109,13 +109,31 @@
                         </div>
                     </div>
 
-                    <!-- Externe matricule section (show when externe) -->
-                    <div class="row" id="externeSecondSection" style="display: none;">
-                        <div class="col-md-6 mb-4">
-                            <label asp-for="CamionMatricule_SecondDepart_Externe" class="form-label">Matricule du camion externe <span class="text-danger">*</span></label>
-                            <input asp-for="CamionMatricule_SecondDepart_Externe" type="text" class="form-control" id="matriculeSecondExterne" maxlength="50" placeholder="Ex: A-12345-B">
-                            <span asp-validation-for="CamionMatricule_SecondDepart_Externe" class="text-danger"></span>
-                            <small class="text-muted">Pour camions utilisés une seule fois</small>
+                    <!-- Externe camion section (show when externe) -->
+                    <div id="externeSecondSection" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="ExterneSocietyTranspName_Second" class="form-label">Nom société de transport <span class="text-danger">*</span></label>
+                                <input asp-for="ExterneSocietyTranspName_Second" type="text" class="form-control" maxlength="200" placeholder="Ex: Transport XYZ">
+                                <span asp-validation-for="ExterneSocietyTranspName_Second" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="ExterneCamionMatricule_Second" class="form-label">Matricule camion <span class="text-danger">*</span></label>
+                                <input asp-for="ExterneCamionMatricule_Second" type="text" class="form-control" maxlength="50" placeholder="Ex: A-12345-B">
+                                <span asp-validation-for="ExterneCamionMatricule_Second" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="ExterneDriverName_Second" class="form-label">Nom chauffeur <span class="text-danger">*</span></label>
+                                <input asp-for="ExterneDriverName_Second" type="text" class="form-control" maxlength="100" placeholder="Ex: Ahmed Ali">
+                                <span asp-validation-for="ExterneDriverName_Second" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="ExterneDriverPhone_Second" class="form-label">Téléphone chauffeur <span class="text-danger">*</span></label>
+                                <input asp-for="ExterneDriverPhone_Second" type="text" class="form-control" maxlength="50" placeholder="Ex: +212-xxx-xxxx">
+                                <span asp-validation-for="ExterneDriverPhone_Second" class="text-danger"></span>
+                            </div>
                         </div>
                     </div>
 
@@ -179,7 +197,11 @@
             const externeSecondSection = document.getElementById('externeSecondSection');
             const societyTranspSelect = document.getElementById('societyTranspSecond');
             const camionSelect = document.getElementById('camionSecond');
-            const matriculeExterneInput = document.getElementById('matriculeSecondExterne');
+            // External camion inputs
+            const externeSocietyName = document.querySelector('[name="ExterneSocietyTranspName_Second"]');
+            const externeCamionMatricule = document.querySelector('[name="ExterneCamionMatricule_Second"]');
+            const externeDriverName = document.querySelector('[name="ExterneDriverName_Second"]');
+            const externeDriverPhone = document.querySelector('[name="ExterneDriverPhone_Second"]');
 
             // Toggle function to show/hide sections based on radio selection
             function toggleSections() {
@@ -195,16 +217,25 @@
                     camionSelect.removeAttribute('required');
                     camionSelect.disabled = true;
 
-                    // Set externe field as required
-                    matriculeExterneInput.setAttribute('required', 'required');
+                    // Set externe fields as required
+                    externeSocietyName.setAttribute('required', 'required');
+                    externeCamionMatricule.setAttribute('required', 'required');
+                    externeDriverName.setAttribute('required', 'required');
+                    externeDriverPhone.setAttribute('required', 'required');
                 } else {
                     // Show society section, hide externe section
                     societySecondSection.style.display = 'block';
                     externeSecondSection.style.display = 'none';
 
-                    // Clear externe field and remove its required state
-                    matriculeExterneInput.value = '';
-                    matriculeExterneInput.removeAttribute('required');
+                    // Clear externe fields and remove their required state
+                    externeSocietyName.value = '';
+                    externeCamionMatricule.value = '';
+                    externeDriverName.value = '';
+                    externeDriverPhone.value = '';
+                    externeSocietyName.removeAttribute('required');
+                    externeCamionMatricule.removeAttribute('required');
+                    externeDriverName.removeAttribute('required');
+                    externeDriverPhone.removeAttribute('required');
 
                     // Set society fields as required
                     societyTranspSelect.setAttribute('required', 'required');

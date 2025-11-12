@@ -31,9 +31,22 @@ namespace GESTION_LTIPN.Models
         [Display(Name = "Type de camion (1er départ)")]
         public bool IsFirstDepartExterne { get; set; } // false = from society, true = externe
 
-        [Display(Name = "Matricule camion externe (1er départ)")]
+        // External Camion Fields (1er départ)
+        [Display(Name = "Nom société de transport")]
+        [StringLength(200, ErrorMessage = "Le nom ne peut pas dépasser 200 caractères")]
+        public string? ExterneSocietyTranspName_First { get; set; }
+
+        [Display(Name = "Matricule camion")]
         [StringLength(50, ErrorMessage = "Le matricule ne peut pas dépasser 50 caractères")]
-        public string? CamionMatricule_FirstDepart_Externe { get; set; }
+        public string? ExterneCamionMatricule_First { get; set; }
+
+        [Display(Name = "Nom chauffeur")]
+        [StringLength(100, ErrorMessage = "Le nom ne peut pas dépasser 100 caractères")]
+        public string? ExterneDriverName_First { get; set; }
+
+        [Display(Name = "Téléphone chauffeur")]
+        [StringLength(50, ErrorMessage = "Le téléphone ne peut pas dépasser 50 caractères")]
+        public string? ExterneDriverPhone_First { get; set; }
 
         [Display(Name = "Société de transport (2ème départ)")]
         public int? SocietyTranspSecondId { get; set; }
@@ -44,9 +57,22 @@ namespace GESTION_LTIPN.Models
         [Display(Name = "Type de camion (2ème départ)")]
         public bool IsSecondDepartExterne { get; set; } // false = from society, true = externe
 
-        [Display(Name = "Matricule camion externe (2ème départ)")]
+        // External Camion Fields (2ème départ)
+        [Display(Name = "Nom société de transport")]
+        [StringLength(200, ErrorMessage = "Le nom ne peut pas dépasser 200 caractères")]
+        public string? ExterneSocietyTranspName_Second { get; set; }
+
+        [Display(Name = "Matricule camion")]
         [StringLength(50, ErrorMessage = "Le matricule ne peut pas dépasser 50 caractères")]
-        public string? CamionMatricule_SecondDepart_Externe { get; set; }
+        public string? ExterneCamionMatricule_Second { get; set; }
+
+        [Display(Name = "Nom chauffeur")]
+        [StringLength(100, ErrorMessage = "Le nom ne peut pas dépasser 100 caractères")]
+        public string? ExterneDriverName_Second { get; set; }
+
+        [Display(Name = "Téléphone chauffeur")]
+        [StringLength(50, ErrorMessage = "Le téléphone ne peut pas dépasser 50 caractères")]
+        public string? ExterneDriverPhone_Second { get; set; }
 
         [Display(Name = "Ville de départ")]
         public string? DepartureCity { get; set; }
@@ -59,9 +85,8 @@ namespace GESTION_LTIPN.Models
         [DataType(DataType.Time)]
         public TimeSpan? DepartureTime { get; set; }
 
-        [Required(ErrorMessage = "Le type de départ est requis")]
         [Display(Name = "Type de départ")]
-        public string DepartureType { get; set; } = string.Empty;
+        public string? DepartureType { get; set; }
 
         [Display(Name = "Type d'emballage")]
         [StringLength(200, ErrorMessage = "Le type d'emballage ne peut pas dépasser 200 caractères")]

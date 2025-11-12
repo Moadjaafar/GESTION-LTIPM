@@ -29,13 +29,6 @@ namespace GESTION_LTIPN.Models
 
         public int? CamionSecondDepart { get; set; } // Truck for return departure (Dakhla -> Agadir/Casablanca)
 
-        // Externe Camion (for one-time use, not in Camions table)
-        [StringLength(50)]
-        public string? CamionMatricule_FirstDepart_Externe { get; set; }
-
-        [StringLength(50)]
-        public string? CamionMatricule_SecondDepart_Externe { get; set; }
-
         // Departure Information
         [StringLength(50)]
         public string? DepartureCity { get; set; } // 'Agadir' or 'Casablanca' - nullable now
@@ -44,9 +37,8 @@ namespace GESTION_LTIPN.Models
 
         public TimeSpan? DepartureTime { get; set; }
 
-        [Required]
         [StringLength(50)]
-        public string DepartureType { get; set; } = string.Empty; // 'Emballage' or 'Empty'
+        public string? DepartureType { get; set; } // 'Emballage' or 'Empty' - set at departure time
 
         [StringLength(200)]
         public string? Type_Emballage { get; set; } // Only required if DepartureType is 'Emballage'
@@ -85,9 +77,8 @@ namespace GESTION_LTIPN.Models
         [StringLength(10)]
         public string Currency { get; set; } = "MAD";
 
-        [Required]
         [StringLength(50)]
-        public string VoyageStatus { get; set; } = "Planned"; // 'Planned', 'InProgress', 'Completed', 'Cancelled'
+        public string? VoyageStatus { get; set; } = "Planned"; // 'Planned', 'InProgress', 'Completed', 'Cancelled'
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
