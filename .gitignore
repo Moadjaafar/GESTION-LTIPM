@@ -451,3 +451,6 @@ nul
 
 # Claude Code
 .claude/
+
+# Database files
+database.sql
