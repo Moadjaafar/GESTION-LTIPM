@@ -78,6 +78,8 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
+                                    <th>Nom complet</th>
+                                    <th>Email</th>
                                     <th>Nom d'utilisateur</th>
                                     <th>Rôle</th>
                                     <th>Société</th>
@@ -90,7 +92,9 @@
                                 @foreach (var user in Model)
                                 {
                                     <tr>
-                                        <td><strong>@user.Username</strong></td>
+                                        <td><strong>@user.FullName</strong></td>
+                                        <td>@user.Email</td>
+                                        <td>@user.Username</td>
                                         <td>
                                             @switch (user.Role)
                                             {

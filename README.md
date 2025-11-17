@@ -78,7 +78,7 @@ Application ASP.NET Core MVC 8.0 pour la gestion des réservations de transport 
 
 ```sql
 -- Utilisateurs
-Users (UserId, Username, Password, Role, SocietyId, TypeVoyage, IsActive, CreatedAt, UpdatedAt)
+Users (UserId, Username, FirstName, LastName, Email, Password, Role, SocietyId, TypeVoyage, IsActive, CreatedAt, UpdatedAt)
 
 -- Sociétés
 Societies (SocietyId, SocietyName, Address, City, Phone, Email, IsActive, CreatedAt, UpdatedAt)
@@ -314,6 +314,51 @@ dotnet ef migrations list
 - Créer les migrations et la base de données
 - Implémenter le module de validation (rôle Validator)
 - Implémenter le module de gestion des voyages
+
+### Session 2 (Date: 2025-11-17)
+**Ce qui a été fait:**
+- ✅ Ajout de nouveaux champs à la table Users : FirstName, LastName, Email
+- ✅ Mise à jour du modèle User.cs avec validation
+- ✅ Ajout d'une propriété calculée FullName (FirstName + LastName)
+- ✅ Mise à jour de AccountController pour inclure les nouveaux champs dans les claims
+- ✅ Mise à jour du Layout pour afficher le nom complet au lieu du username
+- ✅ Mise à jour de toutes les vues de gestion des utilisateurs:
+  - Create.cshtml - Formulaire de création avec les nouveaux champs
+  - Edit.cshtml - Formulaire d'édition avec les nouveaux champs
+  - Index.cshtml - Liste avec nom complet et email
+  - Details.cshtml - Détails avec toutes les informations
+- ✅ Création du fichier DATABASE_UPDATES.md avec les scripts SQL nécessaires
+- ✅ **Système de notifications par email** :
+  - Configuration SMTP Gmail dans appsettings.json
+  - Création du service EmailService avec templates HTML
+  - Notification automatique à saad.ourami@kingpelagique.ma lors de la création d'une réservation
+  - Email professionnel avec détails complets de la réservation
+  - Gestion robuste des erreurs (l'échec d'email ne bloque pas la création)
+
+**Fichiers modifiés:**
+- Models/User.cs
+- Controllers/AccountController.cs
+- Controllers/BookingController.cs
+- Views/Shared/_Layout.cshtml
+- Views/User/Create.cshtml
+- Views/User/Edit.cshtml
+- Views/User/Index.cshtml
+- Views/User/Details.cshtml
+- Program.cs
+- appsettings.json
+
+**Nouveaux fichiers créés:**
+- DATABASE_UPDATES.md (contient les scripts SQL à exécuter)
+- Services/EmailSettings.cs (modèle de configuration email)
+- Services/IEmailService.cs (interface du service email)
+- Services/EmailService.cs (implémentation du service email)
+- EMAIL_CONFIGURATION.md (documentation complète du système d'emails)
+
+**Prochaine étape:**
+- Exécuter les scripts SQL du fichier DATABASE_UPDATES.md sur la base de données
+- Mettre à jour les données existantes avec les noms et emails
+- Tester la création et modification d'utilisateurs
+- Tester l'envoi d'emails lors de la création de réservations
 
 ---
 

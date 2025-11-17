@@ -19,6 +19,26 @@
                         </div>
                     }
 
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="FirstName" class="form-label">Prénom <span class="text-danger">*</span></label>
+                            <input asp-for="FirstName" class="form-control" required />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label asp-for="LastName" class="form-label">Nom <span class="text-danger">*</span></label>
+                            <input asp-for="LastName" class="form-control" required />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Email" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input asp-for="Email" class="form-control" type="email" required />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
                     <div class="mb-4">
                         <label asp-for="Username" class="form-label">Nom d'utilisateur <span class="text-danger">*</span></label>
                         <input asp-for="Username" class="form-control" required />

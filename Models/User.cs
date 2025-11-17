@@ -13,6 +13,22 @@ namespace GESTION_LTIPN.Models
         public string Username { get; set; } = string.Empty;
 
         [Required]
+        [StringLength(100)]
+        [Display(Name = "Prénom")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(100)]
+        [Display(Name = "Nom")]
+        public string LastName { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        [StringLength(255)]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
         [StringLength(255)]
         public string Password { get; set; } = string.Empty;
 
@@ -34,5 +50,9 @@ namespace GESTION_LTIPN.Models
         // Navigation property
         [ForeignKey("SocietyId")]
         public virtual Society? Society { get; set; }
+
+        // Computed property for full name
+        [NotMapped]
+        public string FullName => $"{FirstName} {LastName}";
     }
 }
