@@ -75,7 +75,16 @@
                         <div class="dropdown pe-dropdown-mega d-none d-md-block">
                             <button class="header-profile-btn btn gap-1 text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <div class="d-block pe-2">
-                                    <span class="d-block mb-0 fs-12 fw-semibold">@User.Identity?.Name</span>
+                                    <span class="d-block mb-0 fs-12 fw-semibold">
+                                        @if (User.HasClaim(c => c.Type == "FullName"))
+                                        {
+                                            @User.FindFirst("FullName")?.Value
+                                        }
+                                        else
+                                        {
+                                            @User.Identity?.Name
+                                        }
+                                    </span>
                                 </div>
 
                             </button>
@@ -83,8 +92,21 @@
                                 <div class="border-bottom pb-2 mb-2 d-flex align-items-center gap-2">
                                     <div>
                                         <a href="javascript:void(0)">
-                                            <h6 class="mb-0 lh-base">@User.Identity?.Name</h6>
+                                            <h6 class="mb-0 lh-base">
+                                                @if (User.HasClaim(c => c.Type == "FullName"))
+                                                {
+                                                    @User.FindFirst("FullName")?.Value
+                                                }
+                                                else
+                                                {
+                                                    @User.Identity?.Name
+                                                }
+                                            </h6>
                                         </a>
+                                        @if (User.HasClaim(c => c.Type == System.Security.Claims.ClaimTypes.Email))
+                                        {
+                                            <small class="text-muted d-block">@User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</small>
+                                        }
                                         @if (User.HasClaim(c => c.Type == "SocietyName"))
                                         {
                                             <small class="text-muted">@User.FindFirst("SocietyName")?.Value</small>

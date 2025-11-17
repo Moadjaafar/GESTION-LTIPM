@@ -1,8 +1,10 @@
 using GESTION_LTIPN.Data;
 using GESTION_LTIPN.Models;
+using GESTION_LTIPN.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
 namespace GESTION_LTIPN.Controllers
@@ -12,11 +14,19 @@ namespace GESTION_LTIPN.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<BookingController> _logger;
+        private readonly IEmailService _emailService;
+        private readonly EmailSettings _emailSettings;
 
-        public BookingController(ApplicationDbContext context, ILogger<BookingController> logger)
+        public BookingController(
+            ApplicationDbContext context,
+            ILogger<BookingController> logger,
+            IEmailService emailService,
+            IOptions<EmailSettings> emailSettings)
         {
             _context = context;
             _logger = logger;
+            _emailService = emailService;
+            _emailSettings = emailSettings.Value;
         }
 
         // GET: Booking/Index
@@ -98,6 +108,32 @@ namespace GESTION_LTIPN.Controllers
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Booking {BookingReference} created by user {UserId}", bookingReference, userId);
+
+            // Send email notification
+            try
+            {
+                var createdByUser = await _context.Users.FindAsync(userId);
+                var society = await _context.Societies.FindAsync(model.SocietyId);
+
+                if (createdByUser != null && society != null)
+                {
+
+                    // OR send to multiple recipients (example commented out):
+                    var recipients = new List<string>
+                     {
+                         "saad.ourami@kingpelagique.ma",
+                         createdByUser.Email  // Include creator's email
+                     };
+                    await _emailService.SendBookingCreatedEmailAsync(recipients, booking, createdByUser, society);
+
+                    _logger.LogInformation("Email notification sent for booking {BookingReference}", bookingReference);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send email notification for booking {BookingReference}", bookingReference);
+                // Continue anyway - don't block the user flow due to email failure
+            }
 
             TempData["SuccessMessage"] = $"Réservation {bookingReference} créée avec succès.";
             return RedirectToAction(nameof(Details), new { id = booking.BookingId });
