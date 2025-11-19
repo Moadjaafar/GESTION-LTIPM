@@ -8,7 +8,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title mb-0">@Model.Username</h4>
+                <h4 class="card-title mb-0">@Model.FullName</h4>
                 <div class="d-flex gap-2">
                     <a asp-action="Edit" asp-route-id="@Model.UserId" class="btn btn-warning btn-sm">
                         <i class="ri-edit-line me-1"></i> Modifier
@@ -25,7 +25,19 @@
                         <h6 class="fw-semibold mb-3">Informations Générales</h6>
                         <table class="table table-borderless">
                             <tr>
-                                <th class="w-40">Nom d'utilisateur:</th>
+                                <th class="w-40">Prénom:</th>
+                                <td><strong>@Model.FirstName</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Nom:</th>
+                                <td><strong>@Model.LastName</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td>@Model.Email</td>
+                            </tr>
+                            <tr>
+                                <th>Nom d'utilisateur:</th>
                                 <td><strong>@Model.Username</strong></td>
                             </tr>
                             <tr>

@@ -1,4 +1,5 @@
 using GESTION_LTIPN.Data;
+using GESTION_LTIPN.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +22,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add Stock DbContext (for Gestion_Stock_QRCodee database)
 builder.Services.AddDbContext<StockDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("StockConnection")));
+
+// Configure Email Settings
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
+// Register Email Service
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Add Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

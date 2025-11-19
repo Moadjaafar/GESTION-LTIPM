@@ -1,5 +1,6 @@
 using GESTION_LTIPN.Data;
 using GESTION_LTIPN.Models;
+using GESTION_LTIPN.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,11 +13,13 @@ namespace GESTION_LTIPN.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<UserController> _logger;
+        private readonly IEmailService _emailService;
 
-        public UserController(ApplicationDbContext context, ILogger<UserController> logger)
+        public UserController(ApplicationDbContext context, ILogger<UserController> logger, IEmailService emailService)
         {
             _context = context;
             _logger = logger;
+            _emailService = emailService;
         }
 
         // GET: User/Index
@@ -104,6 +107,12 @@ namespace GESTION_LTIPN.Controllers
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("User {UserId} created: {Username} with role {Role}", user.UserId, user.Username, user.Role);
+
+                // Send account creation email
+                if (!string.IsNullOrEmpty(user.Email))
+                {
+                    await _emailService.SendAccountCreatedEmailAsync(user.Email, user);
+                }
 
                 TempData["SuccessMessage"] = $"Utilisateur '{user.Username}' créé avec succès.";
                 return RedirectToAction(nameof(Index));
