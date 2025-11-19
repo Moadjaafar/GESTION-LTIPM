@@ -18,14 +18,16 @@ namespace GESTION_LTIPN.Controllers
         }
 
         // GET: EtatSuiviVoyage
-        public async Task<IActionResult> Index(DateTime? dateDebut, DateTime? dateFin, string? bookingReference,
-            int? societyId, string? voyageStatus, string? typeVoyage, string? departureCity)
+        public async Task<IActionResult> Index(DateTime? dateDebut, DateTime? dateFin, string? numeroBK,
+            string? numeroTC, int? camionId, int? societyId, string? voyageStatus, string? typeVoyage, string? departureCity)
         {
             var viewModel = new EtatSuiviVoyageViewModel
             {
                 DateDebut = dateDebut,
                 DateFin = dateFin,
-                BookingReference = bookingReference,
+                NumeroBK = numeroBK,
+                NumeroTC = numeroTC,
+                CamionId = camionId,
                 SocietyId = societyId,
                 VoyageStatus = voyageStatus,
                 TypeVoyage = typeVoyage,
@@ -38,22 +40,29 @@ namespace GESTION_LTIPN.Controllers
                 .OrderBy(s => s.SocietyName)
                 .ToListAsync();
 
-            // If filters are applied, load data
-            if (dateDebut.HasValue || dateFin.HasValue || !string.IsNullOrEmpty(bookingReference) ||
-                societyId.HasValue || !string.IsNullOrEmpty(voyageStatus) || !string.IsNullOrEmpty(typeVoyage) ||
-                !string.IsNullOrEmpty(departureCity))
-            {
-                viewModel.Voyages = await GetFilteredVoyages(dateDebut, dateFin, bookingReference,
-                    societyId, voyageStatus, typeVoyage, departureCity);
-                viewModel.FilteredTitle = BuildFilterTitle(dateDebut, dateFin, bookingReference,
-                    societyId, voyageStatus, typeVoyage, departureCity);
-            }
+            viewModel.Camions = await _context.Camions
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.CamionMatricule)
+                .ToListAsync();
+
+            // Default filter: Show voyages where ReturnDepartureDate is NULL (voyages not yet returned)
+            bool isDefaultFilter = !dateDebut.HasValue && !dateFin.HasValue && string.IsNullOrEmpty(numeroBK) &&
+                                   string.IsNullOrEmpty(numeroTC) && !camionId.HasValue && !societyId.HasValue &&
+                                   string.IsNullOrEmpty(voyageStatus) && string.IsNullOrEmpty(typeVoyage) &&
+                                   string.IsNullOrEmpty(departureCity);
+
+            // Load data with default filter or user filters
+            viewModel.Voyages = await GetFilteredVoyages(dateDebut, dateFin, numeroBK, numeroTC, camionId,
+                societyId, voyageStatus, typeVoyage, departureCity, isDefaultFilter);
+            viewModel.FilteredTitle = BuildFilterTitle(dateDebut, dateFin, numeroBK, numeroTC, camionId,
+                societyId, voyageStatus, typeVoyage, departureCity, isDefaultFilter);
 
             return View(viewModel);
         }
 
         private async Task<List<VoyageItemViewModel>> GetFilteredVoyages(DateTime? dateDebut, DateTime? dateFin,
-            string? bookingReference, int? societyId, string? voyageStatus, string? typeVoyage, string? departureCity)
+            string? numeroBK, string? numeroTC, int? camionId, int? societyId, string? voyageStatus,
+            string? typeVoyage, string? departureCity, bool isDefaultFilter)
         {
             var query = _context.Voyages
                 .Include(v => v.Booking)
@@ -63,39 +72,57 @@ namespace GESTION_LTIPN.Controllers
                 .Include(v => v.CamionSecond)
                 .AsQueryable();
 
-            // Apply filters
-            if (dateDebut.HasValue && dateFin.HasValue)
+            // Apply default filter: Show only voyages where ReturnDepartureDate is NULL
+            if (isDefaultFilter)
             {
-                query = query.Where(v => v.DepartureDate >= dateDebut && v.DepartureDate <= dateFin);
+                query = query.Where(v => v.ReturnDepartureDate == null);
             }
-            else if (dateDebut.HasValue)
+            else
             {
-                query = query.Where(v => v.DepartureDate >= dateDebut);
-            }
+                // Apply user filters
+                if (dateDebut.HasValue && dateFin.HasValue)
+                {
+                    query = query.Where(v => v.DepartureDate >= dateDebut && v.DepartureDate <= dateFin);
+                }
+                else if (dateDebut.HasValue)
+                {
+                    query = query.Where(v => v.DepartureDate >= dateDebut);
+                }
 
-            if (!string.IsNullOrEmpty(bookingReference))
-            {
-                query = query.Where(v => v.Booking!.BookingReference.Contains(bookingReference));
-            }
+                if (!string.IsNullOrEmpty(numeroBK))
+                {
+                    query = query.Where(v => v.Booking!.Numero_BK.Contains(numeroBK));
+                }
 
-            if (societyId.HasValue)
-            {
-                query = query.Where(v => v.SocietyPrincipaleId == societyId || v.SocietySecondaireId == societyId);
-            }
+                if (!string.IsNullOrEmpty(numeroTC))
+                {
+                    query = query.Where(v => v.Numero_TC != null && v.Numero_TC.Contains(numeroTC));
+                }
 
-            if (!string.IsNullOrEmpty(voyageStatus))
-            {
-                query = query.Where(v => v.VoyageStatus == voyageStatus);
-            }
+                if (camionId.HasValue)
+                {
+                    query = query.Where(v => v.CamionFirstDepart == camionId || v.CamionSecondDepart == camionId);
+                }
 
-            if (!string.IsNullOrEmpty(typeVoyage))
-            {
-                query = query.Where(v => v.Booking!.TypeVoyage == typeVoyage);
-            }
+                if (societyId.HasValue)
+                {
+                    query = query.Where(v => v.SocietyPrincipaleId == societyId || v.SocietySecondaireId == societyId);
+                }
 
-            if (!string.IsNullOrEmpty(departureCity))
-            {
-                query = query.Where(v => v.DepartureCity == departureCity);
+                if (!string.IsNullOrEmpty(voyageStatus))
+                {
+                    query = query.Where(v => v.VoyageStatus == voyageStatus);
+                }
+
+                if (!string.IsNullOrEmpty(typeVoyage))
+                {
+                    query = query.Where(v => v.Booking!.TypeVoyage == typeVoyage);
+                }
+
+                if (!string.IsNullOrEmpty(departureCity))
+                {
+                    query = query.Where(v => v.DepartureCity == departureCity);
+                }
             }
 
             var voyages = await query
@@ -161,6 +188,7 @@ namespace GESTION_LTIPN.Controllers
                         VoyageStatus = voyage.VoyageStatus,
                         BookingId = voyage.BookingId,
                         BookingReference = voyage.Booking?.BookingReference,
+                        Numero_BK = voyage.Booking?.Numero_BK,
                         TypeVoyage = "EMBALLAGE",
                         SocietyPrincipale = voyage.SocietyPrincipale?.SocietyName,
                         SocietySecondaire = null, // Each operation shows only one society
@@ -199,6 +227,7 @@ namespace GESTION_LTIPN.Controllers
                         VoyageStatus = voyage.VoyageStatus,
                         BookingId = voyage.BookingId,
                         BookingReference = voyage.Booking?.BookingReference,
+                        Numero_BK = voyage.Booking?.Numero_BK,
                         TypeVoyage = "EMBALLAGE",
                         SocietyPrincipale = voyage.SocietySecondaire?.SocietyName, // Show as principal for this operation
                         SocietySecondaire = null,
@@ -239,6 +268,7 @@ namespace GESTION_LTIPN.Controllers
                         VoyageStatus = voyage.VoyageStatus,
                         BookingId = voyage.BookingId,
                         BookingReference = voyage.Booking?.BookingReference,
+                        Numero_BK = voyage.Booking?.Numero_BK,
                         TypeVoyage = voyage.Booking?.TypeVoyage,
                         SocietyPrincipale = voyage.SocietyPrincipale?.SocietyName,
                         SocietySecondaire = null,
@@ -273,58 +303,85 @@ namespace GESTION_LTIPN.Controllers
             return voyageItems;
         }
 
-        private string BuildFilterTitle(DateTime? dateDebut, DateTime? dateFin, string? bookingReference,
-            int? societyId, string? voyageStatus, string? typeVoyage, string? departureCity)
+        private string BuildFilterTitle(DateTime? dateDebut, DateTime? dateFin, string? numeroBK,
+            string? numeroTC, int? camionId, int? societyId, string? voyageStatus, string? typeVoyage,
+            string? departureCity, bool isDefaultFilter)
         {
             var titleParts = new List<string> { "État de suivi des voyages" };
 
-            if (dateDebut.HasValue && dateFin.HasValue)
+            if (isDefaultFilter)
             {
-                titleParts.Add($"entre {dateDebut.Value:dd/MM/yyyy} et {dateFin.Value:dd/MM/yyyy}");
+                titleParts.Add("Voyages en cours (sans départ retour)");
             }
-            else if (dateDebut.HasValue)
+            else
             {
-                titleParts.Add($"à partir du {dateDebut.Value:dd/MM/yyyy}");
-            }
-
-            if (!string.IsNullOrEmpty(bookingReference))
-            {
-                titleParts.Add($"Booking: {bookingReference}");
-            }
-
-            if (societyId.HasValue)
-            {
-                var society = _context.Societies.Find(societyId.Value);
-                if (society != null)
+                if (dateDebut.HasValue && dateFin.HasValue)
                 {
-                    titleParts.Add($"Société: {society.SocietyName}");
+                    titleParts.Add($"entre {dateDebut.Value:dd/MM/yyyy} et {dateFin.Value:dd/MM/yyyy}");
                 }
-            }
+                else if (dateDebut.HasValue)
+                {
+                    titleParts.Add($"à partir du {dateDebut.Value:dd/MM/yyyy}");
+                }
 
-            if (!string.IsNullOrEmpty(voyageStatus))
-            {
-                titleParts.Add($"Statut: {voyageStatus}");
-            }
+                if (!string.IsNullOrEmpty(numeroBK))
+                {
+                    titleParts.Add($"N° BK: {numeroBK}");
+                }
 
-            if (!string.IsNullOrEmpty(typeVoyage))
-            {
-                titleParts.Add($"Type: {typeVoyage}");
-            }
+                if (!string.IsNullOrEmpty(numeroTC))
+                {
+                    titleParts.Add($"N° TC: {numeroTC}");
+                }
 
-            if (!string.IsNullOrEmpty(departureCity))
-            {
-                titleParts.Add($"Départ: {departureCity}");
+                if (camionId.HasValue)
+                {
+                    var camion = _context.Camions.Find(camionId.Value);
+                    if (camion != null)
+                    {
+                        titleParts.Add($"Camion: {camion.CamionMatricule}");
+                    }
+                }
+
+                if (societyId.HasValue)
+                {
+                    var society = _context.Societies.Find(societyId.Value);
+                    if (society != null)
+                    {
+                        titleParts.Add($"Société: {society.SocietyName}");
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(voyageStatus))
+                {
+                    titleParts.Add($"Statut: {voyageStatus}");
+                }
+
+                if (!string.IsNullOrEmpty(typeVoyage))
+                {
+                    titleParts.Add($"Type: {typeVoyage}");
+                }
+
+                if (!string.IsNullOrEmpty(departureCity))
+                {
+                    titleParts.Add($"Départ: {departureCity}");
+                }
             }
 
             return string.Join(" - ", titleParts);
         }
 
         // GET: EtatSuiviVoyage/ExportExcel
-        public async Task<IActionResult> ExportExcel(DateTime? dateDebut, DateTime? dateFin, string? bookingReference,
-            int? societyId, string? voyageStatus, string? typeVoyage, string? departureCity)
+        public async Task<IActionResult> ExportExcel(DateTime? dateDebut, DateTime? dateFin, string? numeroBK,
+            string? numeroTC, int? camionId, int? societyId, string? voyageStatus, string? typeVoyage, string? departureCity)
         {
-            var voyages = await GetFilteredVoyages(dateDebut, dateFin, bookingReference,
-                societyId, voyageStatus, typeVoyage, departureCity);
+            bool isDefaultFilter = !dateDebut.HasValue && !dateFin.HasValue && string.IsNullOrEmpty(numeroBK) &&
+                                   string.IsNullOrEmpty(numeroTC) && !camionId.HasValue && !societyId.HasValue &&
+                                   string.IsNullOrEmpty(voyageStatus) && string.IsNullOrEmpty(typeVoyage) &&
+                                   string.IsNullOrEmpty(departureCity);
+
+            var voyages = await GetFilteredVoyages(dateDebut, dateFin, numeroBK, numeroTC, camionId,
+                societyId, voyageStatus, typeVoyage, departureCity, isDefaultFilter);
 
             using (var workbook = new XLWorkbook())
             {
@@ -402,7 +459,7 @@ namespace GESTION_LTIPN.Controllers
                 workbook.SaveAs(stream);
                 stream.Position = 0;
 
-                var title = BuildFilterTitle(dateDebut, dateFin, bookingReference, societyId, voyageStatus, typeVoyage, departureCity);
+                var title = BuildFilterTitle(dateDebut, dateFin, numeroBK, numeroTC, camionId, societyId, voyageStatus, typeVoyage, departureCity, isDefaultFilter);
                 string fileName = $"{title}_{DateTime.Now:yyyyMMdd}.xlsx";
                 return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
             }

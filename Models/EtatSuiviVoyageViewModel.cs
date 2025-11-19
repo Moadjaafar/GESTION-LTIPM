@@ -13,8 +13,14 @@ namespace GESTION_LTIPN.Models
         [DataType(DataType.Date)]
         public DateTime? DateFin { get; set; }
 
-        [Display(Name = "Référence Booking")]
-        public string? BookingReference { get; set; }
+        [Display(Name = "Numéro BK")]
+        public string? NumeroBK { get; set; }
+
+        [Display(Name = "Numéro TC")]
+        public string? NumeroTC { get; set; }
+
+        [Display(Name = "Matricule Camion")]
+        public int? CamionId { get; set; }
 
         [Display(Name = "Société")]
         public int? SocietyId { get; set; }
@@ -31,8 +37,9 @@ namespace GESTION_LTIPN.Models
         // Data Lists
         public List<VoyageItemViewModel> Voyages { get; set; } = new List<VoyageItemViewModel>();
         public List<Society> Societies { get; set; } = new List<Society>();
+        public List<Camion> Camions { get; set; } = new List<Camion>();
         public List<string> VoyageStatuses { get; set; } = new List<string> { "Planned", "InProgress", "Completed", "Cancelled" };
-        public List<string> TypeVoyages { get; set; } = new List<string> { "Congolé", "Conserve" };
+        public List<string> TypeVoyages { get; set; } = new List<string> { "Congelé", "DRY" };
         public List<string> DepartureCities { get; set; } = new List<string> { "Agadir", "Casablanca" };
 
         // Title for display
@@ -50,6 +57,7 @@ namespace GESTION_LTIPN.Models
         // Booking Info
         public int BookingId { get; set; }
         public string? BookingReference { get; set; }
+        public string? Numero_BK { get; set; }
         public string? TypeVoyage { get; set; }
 
         // Societies

@@ -9,7 +9,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0">Voyage #@Model.VoyageNumber - @Model.Booking?.BookingReference</h4>
-                <a asp-action="AssignVoyages" asp-route-bookingId="@Model.BookingId" class="btn btn-secondary btn-sm">
+                <a asp-controller="EtatSuiviVoyage" asp-action="Index" class="btn btn-secondary btn-sm">
                     <i class="ri-arrow-left-line me-1"></i> Retour
                 </a>
             </div>
