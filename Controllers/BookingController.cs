@@ -64,7 +64,8 @@ namespace GESTION_LTIPN.Controllers
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync(),
-                TypeVoyages = new List<string> { "Congelé", "DRY" }
+                TypeVoyages = new List<string> { "Congelé", "DRY" },
+                TypeContenaires = new List<string> { "20P", "40P" }
             };
 
             return View(viewModel);
@@ -83,6 +84,7 @@ namespace GESTION_LTIPN.Controllers
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync();
                 model.TypeVoyages = new List<string> { "Congelé", "DRY" };
+                model.TypeContenaires = new List<string> { "20P", "40P" };
                 return View(model);
             }
 
@@ -98,6 +100,7 @@ namespace GESTION_LTIPN.Controllers
                 SocietyId = model.SocietyId,
                 TypeVoyage = model.TypeVoyage,
                 Nbr_LTC = model.Nbr_LTC,
+                TypeContenaire = model.TypeContenaire,
                 CreatedByUserId = userId,
                 BookingStatus = "Pending",
                 Notes = model.Notes,
@@ -243,12 +246,14 @@ namespace GESTION_LTIPN.Controllers
                 SocietyId = booking.SocietyId,
                 TypeVoyage = booking.TypeVoyage!,
                 Nbr_LTC = booking.Nbr_LTC,
+                TypeContenaire = booking.TypeContenaire,
                 Notes = booking.Notes,
                 Societies = await _context.Societies
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync(),
-                TypeVoyages = new List<string> { "Congelé", "DRY" }
+                TypeVoyages = new List<string> { "Congelé", "DRY" },
+                TypeContenaires = new List<string> { "20P", "40P" }
             };
 
             return View(viewModel);
@@ -289,6 +294,7 @@ namespace GESTION_LTIPN.Controllers
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync();
                 model.TypeVoyages = new List<string> { "Congelé", "DRY" };
+                model.TypeContenaires = new List<string> { "20P", "40P" };
                 return View(model);
             }
 
@@ -299,6 +305,7 @@ namespace GESTION_LTIPN.Controllers
             booking.SocietyId = model.SocietyId;
             booking.TypeVoyage = model.TypeVoyage;
             booking.Nbr_LTC = model.Nbr_LTC;
+            booking.TypeContenaire = model.TypeContenaire;
             booking.Notes = model.Notes;
 
             await _context.SaveChangesAsync();
@@ -336,6 +343,7 @@ namespace GESTION_LTIPN.Controllers
                 SocietyId = booking.SocietyId,
                 TypeVoyage = booking.TypeVoyage!,
                 Nbr_LTC = booking.Nbr_LTC,
+                TypeContenaire = booking.TypeContenaire,
                 Notes = booking.Notes,
                 BookingStatus = booking.BookingStatus,
                 Voyages = booking.Voyages.OrderBy(v => v.VoyageNumber).Select(v => new VoyageEditItem
@@ -353,7 +361,8 @@ namespace GESTION_LTIPN.Controllers
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync(),
-                TypeVoyages = new List<string> { "Congelé", "DRY" }
+                TypeVoyages = new List<string> { "Congelé", "DRY" },
+                TypeContenaires = new List<string> { "20P", "40P" }
             };
 
             return View(viewModel);
@@ -399,6 +408,7 @@ namespace GESTION_LTIPN.Controllers
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync();
                 model.TypeVoyages = new List<string> { "Congelé", "DRY" };
+                model.TypeContenaires = new List<string> { "20P", "40P" };
                 return View(model);
             }
 
@@ -411,6 +421,7 @@ namespace GESTION_LTIPN.Controllers
                 booking.SocietyId = model.SocietyId;
                 booking.TypeVoyage = model.TypeVoyage;
                 booking.Nbr_LTC = model.Nbr_LTC;
+                booking.TypeContenaire = model.TypeContenaire;
                 booking.Notes = model.Notes;
             }
 

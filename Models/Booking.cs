@@ -25,6 +25,9 @@ namespace GESTION_LTIPN.Models
         [Required]
         public int Nbr_LTC { get; set; } // Number of voyages (LTC = Lot de Transport Camion)
 
+        [StringLength(10)]
+        public string? TypeContenaire { get; set; } // '20P' or '40P'
+
         [Required]
         public int CreatedByUserId { get; set; }
 

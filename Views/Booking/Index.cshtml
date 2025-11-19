@@ -42,6 +42,7 @@
                                 <th>Société</th>
                                 <th>Type de voyage</th>
                                 <th>Nbr LTC</th>
+                                <th>Type Cont.</th>
                                 <th>Statut</th>
                                 <th>Créé le</th>
                                 <th>Créé par</th>
@@ -64,6 +65,16 @@
                                         <td>@item.TypeVoyage</td>
                                         <td>
                                             <strong>@item.Nbr_LTC</strong>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.TypeContenaire))
+                                            {
+                                                <span class="badge bg-secondary">@item.TypeContenaire</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
                                         </td>
                                         <td>
                                             @switch (item.BookingStatus)
@@ -109,7 +120,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="9" class="text-center py-5">
+                                    <td colspan="10" class="text-center py-5">
                                         <i class="ri-inbox-line fs-1 text-muted d-block mb-2"></i>
                                         <p class="text-muted mb-0">Aucune réservation trouvée</p>
                                     </td>

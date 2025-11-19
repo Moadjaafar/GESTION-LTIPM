@@ -38,6 +38,7 @@
                                 <th>Société</th>
                                 <th>Type</th>
                                 <th>Nbr LTC</th>
+                                <th>Type Cont.</th>
                                 <th>Créé le</th>
                                 <th>Créé par</th>
                                 <th>Actions</th>
@@ -57,6 +58,16 @@
                                         <td>@item.Society?.SocietyName</td>
                                         <td>@item.TypeVoyage</td>
                                         <td><strong>@item.Nbr_LTC</strong></td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.TypeContenaire))
+                                            {
+                                                <span class="badge bg-secondary">@item.TypeContenaire</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
                                         <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
                                         <td><span class="badge bg-info">@item.CreatedByUser?.Username</span></td>
                                         <td>
@@ -73,7 +84,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="8" class="text-center py-3">
+                                    <td colspan="9" class="text-center py-3">
                                         <i class="ri-checkbox-circle-line fs-1 text-success d-block mb-2"></i>
                                         <p class="text-muted mb-0">Aucune réservation en attente de validation</p>
                                     </td>
@@ -94,6 +105,7 @@
                                 <th>Société</th>
                                 <th>Type</th>
                                 <th>Nbr LTC</th>
+                                <th>Type Cont.</th>
                                 <th>Créé par</th>
                                 <th>Validé le</th>
                                 <th>Validé par</th>
@@ -114,6 +126,16 @@
                                         <td>@item.Society?.SocietyName</td>
                                         <td>@item.TypeVoyage</td>
                                         <td><strong>@item.Nbr_LTC</strong></td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.TypeContenaire))
+                                            {
+                                                <span class="badge bg-secondary">@item.TypeContenaire</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
                                         <td><span class="badge bg-info">@item.CreatedByUser?.Username</span></td>
                                         <td>@item.ValidatedAt?.ToString("dd/MM/yyyy HH:mm")</td>
                                         <td>
@@ -137,7 +159,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="9" class="text-center py-3">
+                                    <td colspan="10" class="text-center py-3">
                                         <i class="ri-file-list-line fs-1 text-muted d-block mb-2"></i>
                                         <p class="text-muted mb-0">Aucune réservation validée à gérer</p>
                                     </td>

@@ -77,6 +77,19 @@
                                 <td><strong class="text-primary">@Model.Nbr_LTC</strong></td>
                             </tr>
                             <tr>
+                                <th>Type Contenaire:</th>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(Model.TypeContenaire))
+                                    {
+                                        <span class="badge bg-secondary">@Model.TypeContenaire</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
                                 <th>Statut:</th>
                                 <td>
                                     @switch (Model.BookingStatus)

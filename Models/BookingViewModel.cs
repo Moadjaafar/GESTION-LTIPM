@@ -27,6 +27,10 @@ namespace GESTION_LTIPN.Models
         [Range(1, 100, ErrorMessage = "Le nombre de LTC doit être entre 1 et 100")]
         public int Nbr_LTC { get; set; }
 
+        [Display(Name = "Type Contenaire")]
+        [StringLength(10)]
+        public string? TypeContenaire { get; set; }
+
         [Display(Name = "Notes")]
         public string? Notes { get; set; }
 
@@ -51,5 +55,6 @@ namespace GESTION_LTIPN.Models
         // For dropdowns
         public List<Society>? Societies { get; set; }
         public List<string>? TypeVoyages { get; set; }
+        public List<string>? TypeContenaires { get; set; }
     }
 }

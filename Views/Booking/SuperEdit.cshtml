@@ -115,7 +115,38 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="TypeContenaire" class="form-label">Type Contenaire</label>
+                            @if (Model.BookingStatus != "Pending")
+                            {
+                                <select asp-for="TypeContenaire" class="form-select" disabled>
+                                    <option value="">-- Sélectionnez --</option>
+                                    @if (Model.TypeContenaires != null)
+                                    {
+                                        @foreach (var type in Model.TypeContenaires)
+                                        {
+                                            <option value="@type">@type</option>
+                                        }
+                                    }
+                                </select>
+                            }
+                            else
+                            {
+                                <select asp-for="TypeContenaire" class="form-select">
+                                    <option value="">-- Sélectionnez --</option>
+                                    @if (Model.TypeContenaires != null)
+                                    {
+                                        @foreach (var type in Model.TypeContenaires)
+                                        {
+                                            <option value="@type">@type</option>
+                                        }
+                                    }
+                                </select>
+                            }
+                            <span asp-validation-for="TypeContenaire" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
                             <label asp-for="Numero_BK" class="form-label">Numéro BK <span class="text-danger">*</span></label>
                             @if (Model.BookingStatus != "Pending")
                             {
@@ -128,7 +159,7 @@
                             <span asp-validation-for="Numero_BK" class="text-danger"></span>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Statut</label>
                             <input type="text" class="form-control" value="@Model.BookingStatus" readonly disabled>
                         </div>
