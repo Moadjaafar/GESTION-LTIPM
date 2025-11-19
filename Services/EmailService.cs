@@ -21,15 +21,15 @@ namespace GESTION_LTIPN.Services
         {
             try
             {
-                string subject = $"✅ Nouvelle Réservation Créée - {booking.BookingReference}";
+                string subject = $"✅ Nouvelle Réservation Créée - {booking.Numero_BK}";
                 string body = BuildBookingCreatedEmailBody(booking, createdByUser, society);
 
                 await SendEmailAsync(toEmail, subject, body, true);
-                _logger.LogInformation($"Booking creation email sent to {toEmail} for {booking.BookingReference}");
+                _logger.LogInformation($"Booking creation email sent to {toEmail} for {booking.Numero_BK}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error sending booking creation email to {toEmail} for {booking.BookingReference}");
+                _logger.LogError(ex, $"Error sending booking creation email to {toEmail} for {booking.Numero_BK}");
                 // Don't throw - we don't want email failures to break booking creation
             }
         }
@@ -38,15 +38,15 @@ namespace GESTION_LTIPN.Services
         {
             try
             {
-                string subject = $"✅ Nouvelle Réservation Créée - {booking.BookingReference}";
+                string subject = $"✅ Nouvelle Réservation Créée - {booking.Numero_BK}";
                 string body = BuildBookingCreatedEmailBody(booking, createdByUser, society);
 
                 await SendEmailAsync(toEmails, subject, body, true);
-                _logger.LogInformation($"Booking creation email sent to {toEmails.Count} recipients for {booking.BookingReference}");
+                _logger.LogInformation($"Booking creation email sent to {toEmails.Count} recipients for {booking.Numero_BK}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error sending booking creation email for {booking.BookingReference}");
+                _logger.LogError(ex, $"Error sending booking creation email for {booking.Numero_BK}");
                 // Don't throw - we don't want email failures to break booking creation
             }
         }
@@ -72,15 +72,15 @@ namespace GESTION_LTIPN.Services
         {
             try
             {
-                string subject = $"✅ Réservation Validée - {booking.BookingReference}";
+                string subject = $"✅ Réservation Validée - {booking.Numero_BK}";
                 string body = BuildBookingValidatedEmailBody(booking, validatedByUser, society);
 
                 await SendEmailAsync(toEmail, subject, body, true);
-                _logger.LogInformation($"Booking validation email sent to {toEmail} for {booking.BookingReference}");
+                _logger.LogInformation($"Booking validation email sent to {toEmail} for {booking.Numero_BK}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error sending booking validation email to {toEmail} for {booking.BookingReference}");
+                _logger.LogError(ex, $"Error sending booking validation email to {toEmail} for {booking.Numero_BK}");
                 // Don't throw - we don't want email failures to break booking validation
             }
         }

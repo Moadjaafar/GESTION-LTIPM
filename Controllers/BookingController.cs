@@ -64,7 +64,7 @@ namespace GESTION_LTIPN.Controllers
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync(),
-                TypeVoyages = new List<string> { "Congolé", "DRY" }
+                TypeVoyages = new List<string> { "Congelé", "DRY" }
             };
 
             return View(viewModel);
@@ -82,7 +82,7 @@ namespace GESTION_LTIPN.Controllers
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync();
-                model.TypeVoyages = new List<string> { "Congolé", "DRY" };
+                model.TypeVoyages = new List<string> { "Congelé", "DRY" };
                 return View(model);
             }
 
@@ -248,7 +248,7 @@ namespace GESTION_LTIPN.Controllers
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync(),
-                TypeVoyages = new List<string> { "Congolé", "DRY" }
+                TypeVoyages = new List<string> { "Congelé", "DRY" }
             };
 
             return View(viewModel);
@@ -288,7 +288,7 @@ namespace GESTION_LTIPN.Controllers
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync();
-                model.TypeVoyages = new List<string> { "Congolé", "DRY" };
+                model.TypeVoyages = new List<string> { "Congelé", "DRY" };
                 return View(model);
             }
 
@@ -353,7 +353,7 @@ namespace GESTION_LTIPN.Controllers
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync(),
-                TypeVoyages = new List<string> { "Congolé", "DRY" }
+                TypeVoyages = new List<string> { "Congelé", "DRY" }
             };
 
             return View(viewModel);
@@ -398,7 +398,7 @@ namespace GESTION_LTIPN.Controllers
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
                     .ToListAsync();
-                model.TypeVoyages = new List<string> { "Congolé", "DRY" };
+                model.TypeVoyages = new List<string> { "Congelé", "DRY" };
                 return View(model);
             }
 
