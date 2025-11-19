@@ -72,6 +72,12 @@
                     </div>
 
                     <div class="mb-4">
+                        <label asp-for="NomClient" class="form-label">Nom Client</label>
+                        <input asp-for="NomClient" type="text" class="form-control" maxlength="255" placeholder="Entrez le nom du client">
+                        <span asp-validation-for="NomClient" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
                         <label asp-for="Numero_BK" class="form-label">Numéro BK <span class="text-danger">*</span></label>
                         <input asp-for="Numero_BK" type="text" class="form-control" maxlength="50" placeholder="Entrez le numéro BK" required>
                         <span asp-validation-for="Numero_BK" class="text-danger"></span>

@@ -40,6 +40,7 @@
                                 <th>Référence</th>
                                 <th>Numéro BK</th>
                                 <th>Société</th>
+                                <th>Nom Client</th>
                                 <th>Type de voyage</th>
                                 <th>Nbr LTC</th>
                                 <th>Type Cont.</th>
@@ -62,6 +63,7 @@
                                             <span class="badge bg-info">@item.Numero_BK</span>
                                         </td>
                                         <td>@item.Society?.SocietyName</td>
+                                        <td>@(item.NomClient ?? "-")</td>
                                         <td>@item.TypeVoyage</td>
                                         <td>
                                             <strong>@item.Nbr_LTC</strong>
@@ -120,7 +122,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="10" class="text-center py-5">
+                                    <td colspan="11" class="text-center py-5">
                                         <i class="ri-inbox-line fs-1 text-muted d-block mb-2"></i>
                                         <p class="text-muted mb-0">Aucune réservation trouvée</p>
                                     </td>

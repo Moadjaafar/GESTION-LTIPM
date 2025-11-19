@@ -55,7 +55,7 @@ namespace GESTION_LTIPN.Services
         {
             try
             {
-                string subject = "🎉 Votre compte a été créé - Système de Gestion LTIPN";
+                string subject = "🎉 Votre compte a été créé - Système de Gestion LTIPM";
                 string body = BuildAccountCreatedEmailBody(user);
 
                 await SendEmailAsync(toEmail, subject, body, true);
@@ -250,7 +250,7 @@ namespace GESTION_LTIPN.Services
             body.AppendLine("<p style='margin: 5px 0; color: #664d03;'>Cette réservation est en attente de validation. Un responsable transport devra la valider avant de pouvoir créer les voyages.</p>");
             body.AppendLine("</div>");
 
-            body.AppendLine("<p style='margin-top: 20px;'>Cordialement,<br/>Système de Gestion LTIPN</p>");
+            body.AppendLine("<p style='margin-top: 20px;'>Cordialement,<br/>Système de Gestion LTIPM</p>");
             body.AppendLine("<p style='font-size: 12px; color: #6c757d; margin-top: 20px; border-top: 1px solid #dee2e6; padding-top: 10px;'>");
             body.AppendLine("Ceci est un email automatique, merci de ne pas y répondre directement.");
             body.AppendLine("</p>");
@@ -270,13 +270,13 @@ namespace GESTION_LTIPN.Services
 
             // Header
             body.AppendLine("<div style='background-color: #198754; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;'>");
-            body.AppendLine("<h2 style='margin: 0;'>🎉 Bienvenue au Système de Gestion LTIPN</h2>");
+            body.AppendLine("<h2 style='margin: 0;'>🎉 Bienvenue au Système de Gestion LTIPM</h2>");
             body.AppendLine("</div>");
 
             // Content
             body.AppendLine("<div style='background-color: #f8f9fa; padding: 20px; border: 1px solid #dee2e6; border-radius: 0 0 8px 8px;'>");
             body.AppendLine($"<p>Bonjour <strong>{user.FullName}</strong>,</p>");
-            body.AppendLine("<p>Votre compte a été créé avec succès dans le système de gestion LTIPN.</p>");
+            body.AppendLine("<p>Votre compte a été créé avec succès dans le système de gestion LTIPM.</p>");
 
             // Credentials box
             body.AppendLine("<div style='background-color: #d1ecf1; border: 1px solid #bee5eb; border-radius: 5px; padding: 20px; margin: 20px 0;'>");
@@ -324,7 +324,7 @@ namespace GESTION_LTIPN.Services
             body.AppendLine("</div>");
 
             body.AppendLine("<p style='margin-top: 20px;'>Si vous avez des questions ou besoin d'aide, n'hésitez pas à contacter l'administrateur système.</p>");
-            body.AppendLine("<p style='margin-top: 20px;'>Cordialement,<br/>Système de Gestion LTIPN</p>");
+            body.AppendLine("<p style='margin-top: 20px;'>Cordialement,<br/>Système de Gestion LTIPM</p>");
 
             body.AppendLine("<p style='font-size: 12px; color: #6c757d; margin-top: 20px; border-top: 1px solid #dee2e6; padding-top: 10px;'>");
             body.AppendLine("Ceci est un email automatique, merci de ne pas y répondre directement.");
@@ -412,7 +412,7 @@ namespace GESTION_LTIPN.Services
             body.AppendLine("</div>");
 
             body.AppendLine("<p style='margin-top: 20px;'>Merci d'utiliser notre système de gestion.</p>");
-            body.AppendLine("<p style='margin-top: 10px;'>Cordialement,<br/>Système de Gestion LTIPN</p>");
+            body.AppendLine("<p style='margin-top: 10px;'>Cordialement,<br/>Système de Gestion LTIPM</p>");
 
             body.AppendLine("<p style='font-size: 12px; color: #6c757d; margin-top: 20px; border-top: 1px solid #dee2e6; padding-top: 10px;'>");
             body.AppendLine("Ceci est un email automatique, merci de ne pas y répondre directement.");

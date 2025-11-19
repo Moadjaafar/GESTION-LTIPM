@@ -101,6 +101,7 @@ namespace GESTION_LTIPN.Controllers
                 TypeVoyage = model.TypeVoyage,
                 Nbr_LTC = model.Nbr_LTC,
                 TypeContenaire = model.TypeContenaire,
+                NomClient = model.NomClient,
                 CreatedByUserId = userId,
                 BookingStatus = "Pending",
                 Notes = model.Notes,
@@ -247,6 +248,7 @@ namespace GESTION_LTIPN.Controllers
                 TypeVoyage = booking.TypeVoyage!,
                 Nbr_LTC = booking.Nbr_LTC,
                 TypeContenaire = booking.TypeContenaire,
+                NomClient = booking.NomClient,
                 Notes = booking.Notes,
                 Societies = await _context.Societies
                     .Where(s => s.IsActive)
@@ -306,6 +308,7 @@ namespace GESTION_LTIPN.Controllers
             booking.TypeVoyage = model.TypeVoyage;
             booking.Nbr_LTC = model.Nbr_LTC;
             booking.TypeContenaire = model.TypeContenaire;
+            booking.NomClient = model.NomClient;
             booking.Notes = model.Notes;
 
             await _context.SaveChangesAsync();
@@ -344,6 +347,7 @@ namespace GESTION_LTIPN.Controllers
                 TypeVoyage = booking.TypeVoyage!,
                 Nbr_LTC = booking.Nbr_LTC,
                 TypeContenaire = booking.TypeContenaire,
+                NomClient = booking.NomClient,
                 Notes = booking.Notes,
                 BookingStatus = booking.BookingStatus,
                 Voyages = booking.Voyages.OrderBy(v => v.VoyageNumber).Select(v => new VoyageEditItem
@@ -422,6 +426,7 @@ namespace GESTION_LTIPN.Controllers
                 booking.TypeVoyage = model.TypeVoyage;
                 booking.Nbr_LTC = model.Nbr_LTC;
                 booking.TypeContenaire = model.TypeContenaire;
+                booking.NomClient = model.NomClient;
                 booking.Notes = model.Notes;
             }
 

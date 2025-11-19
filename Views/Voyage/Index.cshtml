@@ -36,6 +36,7 @@
                                 <th>Référence</th>
                                 <th>Numéro BK</th>
                                 <th>Société</th>
+                                <th>Nom Client</th>
                                 <th>Type</th>
                                 <th>Nbr LTC</th>
                                 <th>Type Cont.</th>
@@ -56,6 +57,7 @@
                                         <td><strong class="text-primary">@item.BookingReference</strong></td>
                                         <td>@item.Numero_BK</td>
                                         <td>@item.Society?.SocietyName</td>
+                                        <td>@(item.NomClient ?? "-")</td>
                                         <td>@item.TypeVoyage</td>
                                         <td><strong>@item.Nbr_LTC</strong></td>
                                         <td>
@@ -84,7 +86,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="9" class="text-center py-3">
+                                    <td colspan="10" class="text-center py-3">
                                         <i class="ri-checkbox-circle-line fs-1 text-success d-block mb-2"></i>
                                         <p class="text-muted mb-0">Aucune réservation en attente de validation</p>
                                     </td>
@@ -103,6 +105,7 @@
                                 <th>Référence</th>
                                 <th>Numéro BK</th>
                                 <th>Société</th>
+                                <th>Nom Client</th>
                                 <th>Type</th>
                                 <th>Nbr LTC</th>
                                 <th>Type Cont.</th>
@@ -124,6 +127,7 @@
                                         <td><strong class="text-primary">@item.BookingReference</strong></td>
                                         <td>@item.Numero_BK</td>
                                         <td>@item.Society?.SocietyName</td>
+                                        <td>@(item.NomClient ?? "-")</td>
                                         <td>@item.TypeVoyage</td>
                                         <td><strong>@item.Nbr_LTC</strong></td>
                                         <td>
@@ -159,7 +163,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="10" class="text-center py-3">
+                                    <td colspan="11" class="text-center py-3">
                                         <i class="ri-file-list-line fs-1 text-muted d-block mb-2"></i>
                                         <p class="text-muted mb-0">Aucune réservation validée à gérer</p>
                                     </td>

@@ -32,6 +32,10 @@ namespace GESTION_LTIPN.Models
         [StringLength(10)]
         public string? TypeContenaire { get; set; }
 
+        [Display(Name = "Nom Client")]
+        [StringLength(255)]
+        public string? NomClient { get; set; }
+
         [Display(Name = "Notes")]
         public string? Notes { get; set; }
 

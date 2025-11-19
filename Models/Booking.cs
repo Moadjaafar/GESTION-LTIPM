@@ -28,6 +28,9 @@ namespace GESTION_LTIPN.Models
         [StringLength(10)]
         public string? TypeContenaire { get; set; } // '20P' or '40P'
 
+        [StringLength(255)]
+        public string? NomClient { get; set; }
+
         [Required]
         public int CreatedByUserId { get; set; }
 

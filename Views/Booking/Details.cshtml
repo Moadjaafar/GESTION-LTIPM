@@ -90,6 +90,10 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th>Nom Client:</th>
+                                <td>@(Model.NomClient ?? "-")</td>
+                            </tr>
+                            <tr>
                                 <th>Statut:</th>
                                 <td>
                                     @switch (Model.BookingStatus)

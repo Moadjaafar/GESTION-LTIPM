@@ -72,10 +72,10 @@ namespace GESTION_LTIPN.Controllers
                 .Include(v => v.CamionSecond)
                 .AsQueryable();
 
-            // Apply default filter: Show only voyages where ReturnDepartureDate is NULL
+            // Apply default filter: Show only voyages where DepartureDate is NULL
             if (isDefaultFilter)
             {
-                query = query.Where(v => v.ReturnDepartureDate == null);
+                query = query.Where(v => v.DepartureDate == null);
             }
             else
             {
@@ -311,7 +311,7 @@ namespace GESTION_LTIPN.Controllers
 
             if (isDefaultFilter)
             {
-                titleParts.Add("Voyages en cours (sans départ retour)");
+                titleParts.Add("Voyages sans date de départ");
             }
             else
             {
