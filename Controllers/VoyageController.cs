@@ -1,5 +1,6 @@
 using GESTION_LTIPN.Data;
 using GESTION_LTIPN.Models;
+using GESTION_LTIPN.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,11 +13,13 @@ namespace GESTION_LTIPN.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<VoyageController> _logger;
+        private readonly IEmailService _emailService;
 
-        public VoyageController(ApplicationDbContext context, ILogger<VoyageController> logger)
+        public VoyageController(ApplicationDbContext context, ILogger<VoyageController> logger, IEmailService emailService)
         {
             _context = context;
             _logger = logger;
+            _emailService = emailService;
         }
 
         // GET: Voyage/Index - List pending bookings for validation
@@ -38,7 +41,10 @@ namespace GESTION_LTIPN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Validate(int id)
         {
-            var booking = await _context.Bookings.FindAsync(id);
+            var booking = await _context.Bookings
+                .Include(b => b.Society)
+                .Include(b => b.CreatedByUser)
+                .FirstOrDefaultAsync(b => b.BookingId == id);
 
             if (booking == null)
             {
@@ -52,6 +58,7 @@ namespace GESTION_LTIPN.Controllers
             }
 
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var validatedByUser = await _context.Users.FindAsync(userId);
 
             booking.BookingStatus = "Validated";
             booking.ValidatedByUserId = userId;
@@ -60,6 +67,17 @@ namespace GESTION_LTIPN.Controllers
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Booking {BookingId} validated by user {UserId}", id, userId);
+
+            // Send validation email to booking creator
+            if (booking.CreatedByUser != null && !string.IsNullOrEmpty(booking.CreatedByUser.Email) && validatedByUser != null)
+            {
+                await _emailService.SendBookingValidatedEmailAsync(
+                    booking.CreatedByUser.Email,
+                    booking,
+                    validatedByUser,
+                    booking.Society
+                );
+            }
 
             TempData["SuccessMessage"] = "Réservation validée avec succès. Vous pouvez maintenant assigner des voyages.";
             return RedirectToAction(nameof(AssignVoyages), new { bookingId = id });

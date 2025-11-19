@@ -51,6 +51,40 @@ namespace GESTION_LTIPN.Services
             }
         }
 
+        public async Task SendAccountCreatedEmailAsync(string toEmail, User user)
+        {
+            try
+            {
+                string subject = "🎉 Votre compte a été créé - Système de Gestion LTIPN";
+                string body = BuildAccountCreatedEmailBody(user);
+
+                await SendEmailAsync(toEmail, subject, body, true);
+                _logger.LogInformation($"Account creation email sent to {toEmail} for user {user.Username}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending account creation email to {toEmail} for user {user.Username}");
+                // Don't throw - we don't want email failures to break account creation
+            }
+        }
+
+        public async Task SendBookingValidatedEmailAsync(string toEmail, Booking booking, User validatedByUser, Society society)
+        {
+            try
+            {
+                string subject = $"✅ Réservation Validée - {booking.BookingReference}";
+                string body = BuildBookingValidatedEmailBody(booking, validatedByUser, society);
+
+                await SendEmailAsync(toEmail, subject, body, true);
+                _logger.LogInformation($"Booking validation email sent to {toEmail} for {booking.BookingReference}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending booking validation email to {toEmail} for {booking.BookingReference}");
+                // Don't throw - we don't want email failures to break booking validation
+            }
+        }
+
         public async Task SendEmailAsync(string toEmail, string subject, string body, bool isHtml = true)
         {
             try
@@ -225,6 +259,180 @@ namespace GESTION_LTIPN.Services
             body.AppendLine("</body></html>");
 
             return body.ToString();
+        }
+
+        private string BuildAccountCreatedEmailBody(User user)
+        {
+            StringBuilder body = new StringBuilder();
+            body.AppendLine("<!DOCTYPE html>");
+            body.AppendLine("<html><head><meta charset='utf-8'></head><body>");
+            body.AppendLine("<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>");
+
+            // Header
+            body.AppendLine("<div style='background-color: #198754; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;'>");
+            body.AppendLine("<h2 style='margin: 0;'>🎉 Bienvenue au Système de Gestion LTIPN</h2>");
+            body.AppendLine("</div>");
+
+            // Content
+            body.AppendLine("<div style='background-color: #f8f9fa; padding: 20px; border: 1px solid #dee2e6; border-radius: 0 0 8px 8px;'>");
+            body.AppendLine($"<p>Bonjour <strong>{user.FullName}</strong>,</p>");
+            body.AppendLine("<p>Votre compte a été créé avec succès dans le système de gestion LTIPN.</p>");
+
+            // Credentials box
+            body.AppendLine("<div style='background-color: #d1ecf1; border: 1px solid #bee5eb; border-radius: 5px; padding: 20px; margin: 20px 0;'>");
+            body.AppendLine("<h3 style='margin-top: 0; color: #0c5460;'>📋 Vos informations de connexion</h3>");
+
+            body.AppendLine("<table style='width: 100%; border-collapse: collapse; background-color: white; border-radius: 5px;'>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #bee5eb; font-weight: bold; background-color: #e9ecef;'>Lien de connexion:</td>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #bee5eb;'><a href='http://10.77.105.112:2052' style='color: #0d6efd; text-decoration: none;'>http://10.77.105.112:2052</a></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #bee5eb; font-weight: bold; background-color: #e9ecef;'>Nom d'utilisateur:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #bee5eb;'><strong style='color: #0d6efd;'>{user.Username}</strong></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #bee5eb; font-weight: bold; background-color: #e9ecef;'>Mot de passe:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #bee5eb;'><strong style='color: #dc3545;'>{user.Password}</strong></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #bee5eb; font-weight: bold; background-color: #e9ecef;'>Rôle:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #bee5eb;'>{GetRoleName(user.Role)}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("</table>");
+            body.AppendLine("</div>");
+
+            // Security warning
+            body.AppendLine("<div style='background-color: #fff3cd; border: 1px solid #ffecb5; border-radius: 5px; padding: 15px; margin: 20px 0;'>");
+            body.AppendLine("<p style='margin: 0; color: #664d03;'><strong>🔒 Note de sécurité:</strong></p>");
+            body.AppendLine("<p style='margin: 5px 0; color: #664d03;'>Il est recommandé de changer votre mot de passe lors de votre première connexion.</p>");
+            body.AppendLine("</div>");
+
+            // Instructions
+            body.AppendLine("<div style='background-color: white; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin: 20px 0;'>");
+            body.AppendLine("<h3 style='margin-top: 0; color: #212529;'>📝 Étapes pour vous connecter:</h3>");
+            body.AppendLine("<ol style='color: #495057; line-height: 1.8;'>");
+            body.AppendLine("<li>Cliquez sur le lien de connexion ci-dessus</li>");
+            body.AppendLine("<li>Entrez votre nom d'utilisateur et mot de passe</li>");
+            body.AppendLine("<li>Accédez au système de gestion</li>");
+            body.AppendLine("</ol>");
+            body.AppendLine("</div>");
+
+            body.AppendLine("<p style='margin-top: 20px;'>Si vous avez des questions ou besoin d'aide, n'hésitez pas à contacter l'administrateur système.</p>");
+            body.AppendLine("<p style='margin-top: 20px;'>Cordialement,<br/>Système de Gestion LTIPN</p>");
+
+            body.AppendLine("<p style='font-size: 12px; color: #6c757d; margin-top: 20px; border-top: 1px solid #dee2e6; padding-top: 10px;'>");
+            body.AppendLine("Ceci est un email automatique, merci de ne pas y répondre directement.");
+            body.AppendLine("</p>");
+            body.AppendLine("</div>");
+            body.AppendLine("</div>");
+            body.AppendLine("</body></html>");
+
+            return body.ToString();
+        }
+
+        private string BuildBookingValidatedEmailBody(Booking booking, User validatedByUser, Society society)
+        {
+            StringBuilder body = new StringBuilder();
+            body.AppendLine("<!DOCTYPE html>");
+            body.AppendLine("<html><head><meta charset='utf-8'></head><body>");
+            body.AppendLine("<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>");
+
+            // Header
+            body.AppendLine("<div style='background-color: #198754; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;'>");
+            body.AppendLine("<h2 style='margin: 0;'>✅ Votre Réservation a été Validée</h2>");
+            body.AppendLine("</div>");
+
+            // Content
+            body.AppendLine("<div style='background-color: #f8f9fa; padding: 20px; border: 1px solid #dee2e6; border-radius: 0 0 8px 8px;'>");
+            body.AppendLine($"<p>Bonjour,</p>");
+            body.AppendLine("<p>Nous vous informons que votre réservation de transport a été validée avec succès.</p>");
+
+            // Details table
+            body.AppendLine("<table style='width: 100%; border-collapse: collapse; margin: 20px 0; background-color: white;'>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Numéro BK:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'><strong>{booking.Numero_BK}</strong></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Référence:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'><strong>{booking.BookingReference}</strong></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Société:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{society.SocietyName}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Type de voyage:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{booking.TypeVoyage}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Nombre de LTC:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6; color: #198754; font-weight: bold;'>{booking.Nbr_LTC}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Statut:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'><span style='background-color: #198754; color: white; padding: 4px 8px; border-radius: 4px;'>Validée</span></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Date de validation:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{booking.ValidatedAt:dd/MM/yyyy HH:mm}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Validée par:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{validatedByUser.FullName} ({validatedByUser.Username})</td>");
+            body.AppendLine("</tr>");
+
+            if (!string.IsNullOrEmpty(booking.Notes))
+            {
+                body.AppendLine("<tr style='background-color: #e9ecef;'>");
+                body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Notes:</td>");
+                body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{booking.Notes}</td>");
+                body.AppendLine("</tr>");
+            }
+
+            body.AppendLine("</table>");
+
+            body.AppendLine("<div style='background-color: #d1ecf1; border: 1px solid #bee5eb; border-radius: 5px; padding: 15px; margin: 20px 0;'>");
+            body.AppendLine("<p style='margin: 0; color: #0c5460;'><strong>📋 Prochaines étapes:</strong></p>");
+            body.AppendLine("<p style='margin: 5px 0; color: #0c5460;'>Les voyages seront maintenant planifiés et assignés par le responsable transport. Vous serez informé des détails de transport une fois les voyages créés.</p>");
+            body.AppendLine("</div>");
+
+            body.AppendLine("<p style='margin-top: 20px;'>Merci d'utiliser notre système de gestion.</p>");
+            body.AppendLine("<p style='margin-top: 10px;'>Cordialement,<br/>Système de Gestion LTIPN</p>");
+
+            body.AppendLine("<p style='font-size: 12px; color: #6c757d; margin-top: 20px; border-top: 1px solid #dee2e6; padding-top: 10px;'>");
+            body.AppendLine("Ceci est un email automatique, merci de ne pas y répondre directement.");
+            body.AppendLine("</p>");
+            body.AppendLine("</div>");
+            body.AppendLine("</div>");
+            body.AppendLine("</body></html>");
+
+            return body.ToString();
+        }
+
+        private string GetRoleName(string role)
+        {
+            return role switch
+            {
+                "Admin" => "Administrateur",
+                "Booking_Agent" => "Agent de Réservation",
+                "Trans_Respo" => "Responsable Transport",
+                _ => role
+            };
         }
     }
 }
