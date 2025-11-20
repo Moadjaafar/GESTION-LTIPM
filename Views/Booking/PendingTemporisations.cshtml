@@ -1,0 +1,143 @@
+@model GESTION_LTIPN.Models.PendingTemporisationsViewModel
+
+@{
+    ViewData["Title"] = "Temporisations en attente";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="card-title text-white mb-0">
+                        <i class="fas fa-clock me-2"></i>Temporisations en attente de votre réponse
+                        @if (Model.TotalPending > 0)
+                        {
+                            <span class="badge bg-danger ms-2">@Model.TotalPending</span>
+                        }
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.TotalPending == 0)
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Vous n'avez aucune temporisation en attente de réponse.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Action requise:</strong> Vous avez @Model.TotalPending temporisation(s) en attente de votre réponse.
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Référence</th>
+                                        <th>N° BK</th>
+                                        <th>Société</th>
+                                        <th>Type</th>
+                                        <th>Temporisé par</th>
+                                        <th>Date temporisation</th>
+                                        <th>Validation estimée</th>
+                                        <th>Jours restants</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.PendingTemporisations)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@item.BookingReference</strong>
+                                            </td>
+                                            <td>@item.Numero_BK</td>
+                                            <td>@item.SocietyName</td>
+                                            <td>
+                                                <span class="badge bg-info">@item.TypeVoyage</span>
+                                            </td>
+                                            <td>@item.TemporisedByFullName</td>
+                                            <td>@item.TemporisedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>
+                                                <span class="badge bg-primary">
+                                                    @item.EstimatedValidationDate.ToString("dd/MM/yyyy")
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if (item.DaysUntilEstimatedValidation < 0)
+                                                {
+                                                    <span class="badge bg-danger">Dépassée</span>
+                                                }
+                                                else if (item.DaysUntilEstimatedValidation == 0)
+                                                {
+                                                    <span class="badge bg-warning">Aujourd'hui</span>
+                                                }
+                                                else if (item.DaysUntilEstimatedValidation == 1)
+                                                {
+                                                    <span class="badge bg-warning">Demain</span>
+                                                }
+                                                else if (item.DaysUntilEstimatedValidation <= 3)
+                                                {
+                                                    <span class="badge bg-warning">@item.DaysUntilEstimatedValidation jours</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@item.DaysUntilEstimatedValidation jours</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="RespondToTemporisation"
+                                                       asp-route-id="@item.TemporisationId"
+                                                       class="btn btn-sm btn-primary"
+                                                       title="Répondre">
+                                                        <i class="fas fa-reply"></i> Répondre
+                                                    </a>
+                                                    <a asp-action="Details"
+                                                       asp-route-id="@item.BookingId"
+                                                       class="btn btn-sm btn-info"
+                                                       title="Voir détails">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <!-- Expandable Row for Reason -->
+                                        <tr class="table-active">
+                                            <td colspan="9">
+                                                <div class="ps-4">
+                                                    <strong><i class="fas fa-comment me-2"></i>Raison:</strong>
+                                                    <div class="mt-2 p-2 bg-light rounded">
+                                                        @item.ReasonTemporisation
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    <div class="mt-3">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à la liste des réservations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-refresh every 60 seconds to check for new temporisations
+        setTimeout(function() {
+            location.reload();
+        }, 60000);
+    </script>
+}

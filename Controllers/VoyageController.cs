@@ -33,6 +33,17 @@ namespace GESTION_LTIPN.Controllers
                 .OrderByDescending(b => b.CreatedAt)
                 .ToListAsync();
 
+            // Load latest temporisation for each pending booking (including refused ones)
+            var pendingBookingIds = bookings.Where(b => b.BookingStatus == "Pending").Select(b => b.BookingId).ToList();
+            var temporisations = await _context.BookingTemporisations
+                .Include(t => t.TemporisedByUser)
+                .Where(t => pendingBookingIds.Contains(t.BookingId))
+                .GroupBy(t => t.BookingId)
+                .Select(g => g.OrderByDescending(t => t.TemporisedAt).FirstOrDefault())
+                .ToListAsync();
+
+            ViewBag.Temporisations = temporisations.ToDictionary(t => t.BookingId, t => t);
+
             return View(bookings);
         }
 

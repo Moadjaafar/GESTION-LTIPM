@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Validation et Gestion des Voyages";
+    var temporisations = ViewBag.Temporisations as Dictionary<int, GESTION_LTIPN.Models.BookingTemporisation>;
 }
 
 <div class="row">
@@ -40,6 +41,7 @@
                                 <th>Type</th>
                                 <th>Nbr LTC</th>
                                 <th>Type Cont.</th>
+                                <th>ETD</th>
                                 <th>Créé le</th>
                                 <th>Créé par</th>
                                 <th>Actions</th>
@@ -53,8 +55,29 @@
                             {
                                 @foreach (var item in pendingBookings)
                                 {
+                                    var hasTemporisation = temporisations != null && temporisations.ContainsKey(item.BookingId);
+                                    var temporisation = hasTemporisation ? temporisations[item.BookingId] : null;
+                                    var rowId = "booking-" + item.BookingId;
+
                                     <tr>
-                                        <td><strong class="text-primary">@item.BookingReference</strong></td>
+                                        <td>
+                                            <strong class="text-primary">@item.BookingReference</strong>
+                                            @if (hasTemporisation && temporisation != null)
+                                            {
+                                                @if (temporisation.CreatorResponse == "Refused")
+                                                {
+                                                    <span class="badge bg-danger ms-1" title="Temporisation refusée">
+                                                        <i class="fas fa-exclamation-triangle"></i> Refusée
+                                                    </span>
+                                                }
+                                                else if (temporisation.CreatorResponse == "Pending")
+                                                {
+                                                    <span class="badge bg-warning ms-1" title="En attente de réponse">
+                                                        <i class="fas fa-clock"></i> En attente
+                                                    </span>
+                                                }
+                                            }
+                                        </td>
                                         <td>@item.Numero_BK</td>
                                         <td>@item.Society?.SocietyName</td>
                                         <td>@(item.NomClient ?? "-")</td>
@@ -70,23 +93,104 @@
                                                 <span class="text-muted">-</span>
                                             }
                                         </td>
+                                        <td>
+                                            @if (item.ETD.HasValue)
+                                            {
+                                                <span class="text-info"><strong>@item.ETD.Value.ToString("dd/MM/yyyy HH:mm")</strong></span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
                                         <td>@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
                                         <td><span class="badge bg-info">@item.CreatedByUser?.Username</span></td>
                                         <td>
-                                            <form asp-action="Validate" asp-route-id="@item.BookingId" method="post" class="d-inline">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Voulez-vous valider cette réservation ?')">
-                                                    <i class="ri-check-line me-1"></i> Valider
-                                                </button>
-                                            </form>
+                                            <div class="d-flex gap-1">
+                                                @if (hasTemporisation && temporisation != null)
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="collapse" data-bs-target="#@rowId" title="Voir l'historique">
+                                                        <i class="fas fa-history me-1"></i> Historique
+                                                    </button>
+                                                }
+                                                <form asp-action="Validate" asp-route-id="@item.BookingId" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Voulez-vous valider cette réservation ?')">
+                                                        <i class="ri-check-line me-1"></i> Valider
+                                                    </button>
+                                                </form>
+                                                @if (User.IsInRole("Admin"))
+                                                {
+                                                    <a asp-controller="Booking" asp-action="Temporiser" asp-route-id="@item.BookingId" class="btn btn-sm btn-warning">
+                                                        <i class="fas fa-clock me-1"></i> Temporiser
+                                                    </a>
+                                                }
+                                            </div>
                                         </td>
                                     </tr>
+                                    @if (hasTemporisation && temporisation != null)
+                                    {
+                                        <tr class="collapse" id="@rowId">
+                                            <td colspan="11" class="bg-light">
+                                                <div class="p-3">
+                                                    <h6 class="fw-bold text-warning">
+                                                        <i class="fas fa-clock me-2"></i>Historique de Temporisation
+                                                    </h6>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <p class="mb-1"><strong>Temporisé par:</strong> @temporisation.TemporisedByUser?.FullName</p>
+                                                            <p class="mb-1"><strong>Date temporisation:</strong> @temporisation.TemporisedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                                                            <p class="mb-1"><strong>Date estimée:</strong> @temporisation.EstimatedValidationDate.ToString("dd/MM/yyyy")</p>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p class="mb-1">
+                                                                <strong>Statut réponse:</strong>
+                                                                @switch (temporisation.CreatorResponse)
+                                                                {
+                                                                    case "Pending":
+                                                                        <span class="badge bg-warning">En attente</span>
+                                                                        break;
+                                                                    case "Accepted":
+                                                                        <span class="badge bg-success">Acceptée</span>
+                                                                        break;
+                                                                    case "Refused":
+                                                                        <span class="badge bg-danger">Refusée</span>
+                                                                        break;
+                                                                }
+                                                            </p>
+                                                            @if (temporisation.CreatorRespondedAt.HasValue)
+                                                            {
+                                                                <p class="mb-1"><strong>Répondu le:</strong> @temporisation.CreatorRespondedAt.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-2">
+                                                        <div class="col-12">
+                                                            <p class="mb-1"><strong>Raison de temporisation:</strong></p>
+                                                            <div class="alert alert-light mb-2">@temporisation.ReasonTemporisation</div>
+                                                        </div>
+                                                    </div>
+                                                    @if (!string.IsNullOrEmpty(temporisation.CreatorResponseNotes))
+                                                    {
+                                                        <div class="row">
+                                                            <div class="col-12">
+                                                                <p class="mb-1"><strong>Notes du créateur:</strong></p>
+                                                                <div class="alert alert-info mb-0">
+                                                                    <i class="fas fa-comment me-2"></i>@temporisation.CreatorResponseNotes
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
                                 }
                             }
                             else
                             {
                                 <tr>
-                                    <td colspan="10" class="text-center py-3">
+                                    <td colspan="11" class="text-center py-3">
                                         <i class="ri-checkbox-circle-line fs-1 text-success d-block mb-2"></i>
                                         <p class="text-muted mb-0">Aucune réservation en attente de validation</p>
                                     </td>

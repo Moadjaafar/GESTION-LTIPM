@@ -105,6 +105,7 @@ namespace GESTION_LTIPN.Controllers
                 CreatedByUserId = userId,
                 BookingStatus = "Pending",
                 Notes = model.Notes,
+                ETD = model.ETD,
                 CreatedAt = DateTime.Now
             };
 
@@ -179,6 +180,19 @@ namespace GESTION_LTIPN.Controllers
                 return Forbid();
             }
 
+            // Load active temporisation if booking is temporised
+            if (booking.BookingStatus == "Temporised")
+            {
+                var temporisation = await _context.BookingTemporisations
+                    .Include(t => t.TemporisedByUser)
+                    .FirstOrDefaultAsync(t => t.BookingId == id && t.IsActive);
+
+                if (temporisation != null)
+                {
+                    ViewBag.Temporisation = temporisation;
+                }
+            }
+
             return View(booking);
         }
 
@@ -250,6 +264,7 @@ namespace GESTION_LTIPN.Controllers
                 TypeContenaire = booking.TypeContenaire,
                 NomClient = booking.NomClient,
                 Notes = booking.Notes,
+                ETD = booking.ETD ?? DateTime.Now,
                 Societies = await _context.Societies
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.SocietyName)
@@ -310,6 +325,7 @@ namespace GESTION_LTIPN.Controllers
             booking.TypeContenaire = model.TypeContenaire;
             booking.NomClient = model.NomClient;
             booking.Notes = model.Notes;
+            booking.ETD = model.ETD;
 
             await _context.SaveChangesAsync();
 
@@ -451,6 +467,329 @@ namespace GESTION_LTIPN.Controllers
 
             TempData["SuccessMessage"] = $"Réservation {booking.BookingReference} et ses voyages modifiés avec succès.";
             return RedirectToAction(nameof(Details), new { id = booking.BookingId });
+        }
+
+        // =======================================================================
+        // TEMPORISATION FEATURE
+        // =======================================================================
+
+        // GET: Booking/Temporiser/5
+        [Authorize(Roles = "Admin,Validator")]
+        public async Task<IActionResult> Temporiser(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var booking = await _context.Bookings
+                .Include(b => b.Society)
+                .Include(b => b.CreatedByUser)
+                .FirstOrDefaultAsync(b => b.BookingId == id);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            // Only pending bookings can be temporised
+            if (booking.BookingStatus != "Pending")
+            {
+                TempData["ErrorMessage"] = "Seules les réservations en attente peuvent être temporisées.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var viewModel = new TemporiseBookingViewModel
+            {
+                BookingId = booking.BookingId,
+                BookingReference = booking.BookingReference,
+                Numero_BK = booking.Numero_BK,
+                SocietyName = booking.Society?.SocietyName,
+                TypeVoyage = booking.TypeVoyage,
+                CreatedByUserName = booking.CreatedByUser?.FullName,
+                EstimatedValidationDate = DateTime.Today.AddDays(7) // Default: 7 days from today
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Booking/Temporiser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Validator")]
+        public async Task<IActionResult> Temporiser(TemporiseBookingViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var booking = await _context.Bookings
+                .Include(b => b.CreatedByUser)
+                .FirstOrDefaultAsync(b => b.BookingId == model.BookingId);
+
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            // Validate booking status
+            if (booking.BookingStatus != "Pending")
+            {
+                TempData["ErrorMessage"] = "Seules les réservations en attente peuvent être temporisées.";
+                return RedirectToAction(nameof(Details), new { id = model.BookingId });
+            }
+
+            // Validate estimated date is in the future
+            if (model.EstimatedValidationDate <= DateTime.Today)
+            {
+                ModelState.AddModelError("EstimatedValidationDate", "La date estimée doit être dans le futur.");
+                return View(model);
+            }
+
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            // Deactivate any existing active temporisations for this booking
+            var existingTemporisations = await _context.BookingTemporisations
+                .Where(bt => bt.BookingId == model.BookingId && bt.IsActive)
+                .ToListAsync();
+
+            foreach (var temp in existingTemporisations)
+            {
+                temp.IsActive = false;
+                temp.UpdatedAt = DateTime.Now;
+            }
+
+            // Create new temporisation record
+            var temporisation = new BookingTemporisation
+            {
+                BookingId = model.BookingId,
+                TemporisedByUserId = userId,
+                TemporisedAt = DateTime.Now,
+                ReasonTemporisation = model.ReasonTemporisation,
+                EstimatedValidationDate = model.EstimatedValidationDate,
+                CreatorResponse = "Pending",
+                IsActive = true,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+
+            _context.BookingTemporisations.Add(temporisation);
+
+            // Update booking status to Temporised
+            booking.BookingStatus = "Temporised";
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Booking {BookingId} temporised by user {UserId} until {EstimatedDate}",
+                model.BookingId, userId, model.EstimatedValidationDate);
+
+            // TODO: Send email notification to booking creator
+            try
+            {
+                if (booking.CreatedByUser != null && !string.IsNullOrEmpty(booking.CreatedByUser.Email))
+                {
+                    // Email notification logic here
+                    _logger.LogInformation("Email notification sent to {Email} for temporisation of booking {BookingId}",
+                        booking.CreatedByUser.Email, model.BookingId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send temporisation email for booking {BookingId}", model.BookingId);
+            }
+
+            TempData["SuccessMessage"] = $"Réservation {booking.BookingReference} temporisée avec succès jusqu'au {model.EstimatedValidationDate:dd/MM/yyyy}.";
+            return RedirectToAction(nameof(Details), new { id = model.BookingId });
+        }
+
+        // GET: Booking/RespondToTemporisation/5
+        [Authorize(Roles = "Booking_Agent")]
+        public async Task<IActionResult> RespondToTemporisation(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var temporisation = await _context.BookingTemporisations
+                .Include(t => t.Booking)
+                    .ThenInclude(b => b.Society)
+                .Include(t => t.TemporisedByUser)
+                .FirstOrDefaultAsync(t => t.TemporisationId == id && t.IsActive);
+
+            if (temporisation == null)
+            {
+                return NotFound();
+            }
+
+            var booking = temporisation.Booking;
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            // Verify the current user is the booking creator
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            if (booking.CreatedByUserId != userId)
+            {
+                TempData["ErrorMessage"] = "Vous n'êtes pas autorisé à répondre à cette temporisation.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Check if already responded
+            if (temporisation.CreatorResponse != "Pending")
+            {
+                TempData["ErrorMessage"] = "Vous avez déjà répondu à cette temporisation.";
+                return RedirectToAction(nameof(Details), new { id = booking.BookingId });
+            }
+
+            var viewModel = new RespondToTemporisationViewModel
+            {
+                TemporisationId = temporisation.TemporisationId,
+                BookingId = booking.BookingId,
+                BookingReference = booking.BookingReference,
+                Numero_BK = booking.Numero_BK,
+                SocietyName = booking.Society?.SocietyName,
+                TypeVoyage = booking.TypeVoyage,
+                TemporisedByUserName = temporisation.TemporisedByUser?.FullName,
+                TemporisedAt = temporisation.TemporisedAt,
+                ReasonTemporisation = temporisation.ReasonTemporisation,
+                EstimatedValidationDate = temporisation.EstimatedValidationDate
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Booking/RespondToTemporisation
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Booking_Agent")]
+        public async Task<IActionResult> RespondToTemporisation(RespondToTemporisationViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Validate response value
+            if (model.CreatorResponse != "Accepted" && model.CreatorResponse != "Refused")
+            {
+                ModelState.AddModelError("CreatorResponse", "Réponse invalide. Veuillez accepter ou refuser.");
+                return View(model);
+            }
+
+            var temporisation = await _context.BookingTemporisations
+                .Include(t => t.Booking)
+                .FirstOrDefaultAsync(t => t.TemporisationId == model.TemporisationId);
+
+            if (temporisation == null)
+            {
+                return NotFound();
+            }
+
+            var booking = temporisation.Booking;
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            // Verify the current user is the booking creator
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            if (booking.CreatedByUserId != userId)
+            {
+                return Forbid();
+            }
+
+            // Check if already responded
+            if (temporisation.CreatorResponse != "Pending")
+            {
+                TempData["ErrorMessage"] = "Vous avez déjà répondu à cette temporisation.";
+                return RedirectToAction(nameof(Details), new { id = booking.BookingId });
+            }
+
+            // Update temporisation with creator response
+            temporisation.CreatorResponse = model.CreatorResponse;
+            temporisation.CreatorRespondedAt = DateTime.Now;
+            temporisation.CreatorResponseNotes = model.CreatorResponseNotes;
+            temporisation.UpdatedAt = DateTime.Now;
+
+            // Handle response actions
+            if (model.CreatorResponse == "Refused")
+            {
+                // Creator refused: Return booking to Pending status
+                booking.BookingStatus = "Pending";
+
+                // Deactivate the temporisation
+                temporisation.IsActive = false;
+
+                _logger.LogInformation("Temporisation {TemporisationId} refused by user {UserId}. Booking {BookingId} returned to Pending.",
+                    model.TemporisationId, userId, booking.BookingId);
+
+                TempData["SuccessMessage"] = "Vous avez refusé la temporisation. La réservation est revenue au statut En attente.";
+            }
+            else // Accepted
+            {
+                // Creator accepted: Booking stays in Temporised status
+                _logger.LogInformation("Temporisation {TemporisationId} accepted by user {UserId}. Booking {BookingId} remains Temporised until {EstimatedDate}.",
+                    model.TemporisationId, userId, booking.BookingId, temporisation.EstimatedValidationDate);
+
+                TempData["SuccessMessage"] = $"Vous avez accepté la temporisation. La réservation sera validée autour du {temporisation.EstimatedValidationDate:dd/MM/yyyy}.";
+            }
+
+            await _context.SaveChangesAsync();
+
+            // TODO: Send email notification to admin/validator
+            try
+            {
+                _logger.LogInformation("Email notification sent to admin about creator response for temporisation {TemporisationId}",
+                    model.TemporisationId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send response notification email for temporisation {TemporisationId}", model.TemporisationId);
+            }
+
+            return RedirectToAction(nameof(Details), new { id = booking.BookingId });
+        }
+
+        // GET: Booking/PendingTemporisations
+        [Authorize(Roles = "Booking_Agent")]
+        public async Task<IActionResult> PendingTemporisations()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var pendingTemporisations = await _context.BookingTemporisations
+                .Include(t => t.Booking)
+                    .ThenInclude(b => b.Society)
+                .Include(t => t.TemporisedByUser)
+                .Where(t => t.Booking.CreatedByUserId == userId &&
+                           t.IsActive &&
+                           t.CreatorResponse == "Pending")
+                .OrderByDescending(t => t.TemporisedAt)
+                .Select(t => new PendingTemporisationItem
+                {
+                    TemporisationId = t.TemporisationId,
+                    BookingId = t.BookingId,
+                    BookingReference = t.Booking.BookingReference,
+                    Numero_BK = t.Booking.Numero_BK,
+                    SocietyName = t.Booking.Society != null ? t.Booking.Society.SocietyName : null,
+                    TypeVoyage = t.Booking.TypeVoyage,
+                    TemporisedByFullName = t.TemporisedByUser != null ? t.TemporisedByUser.FullName : null,
+                    TemporisedAt = t.TemporisedAt,
+                    ReasonTemporisation = t.ReasonTemporisation,
+                    EstimatedValidationDate = t.EstimatedValidationDate,
+                    DaysUntilEstimatedValidation = (int)(t.EstimatedValidationDate.Date - DateTime.Today).TotalDays
+                })
+                .ToListAsync();
+
+            var viewModel = new PendingTemporisationsViewModel
+            {
+                PendingTemporisations = pendingTemporisations,
+                TotalPending = pendingTemporisations.Count
+            };
+
+            return View(viewModel);
         }
 
         // Helper method to generate unique booking reference

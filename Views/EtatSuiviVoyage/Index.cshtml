@@ -150,6 +150,7 @@
                                     <th class="text-end">Prix (MAD)</th>
                                     <th>Date FIN OP</th>
                                     <th>Statut</th>
+                                    <th>Progression</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -285,6 +286,42 @@
                                             else
                                             {
                                                 <span class="badge bg-secondary">@item.VoyageStatus</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.VoyageStatus == "Planned")
+                                            {
+                                                <small class="text-muted">En attente de départ</small>
+                                            }
+                                            else if (item.VoyageStatus == "InProgress")
+                                            {
+                                                @if (string.IsNullOrEmpty(item.ReceptionDate))
+                                                {
+                                                    <small><i class="ri-checkbox-blank-circle-line text-success"></i> Parti</small><br />
+                                                    <small class="text-muted">→ En route vers Dakhla</small>
+                                                }
+                                                else if (string.IsNullOrEmpty(item.ReturnDepartureDate))
+                                                {
+                                                    <small><i class="ri-checkbox-circle-fill text-success"></i> Reçu à Dakhla</small><br />
+                                                    <small class="text-muted">→ En attente de retour</small>
+                                                }
+                                                else if (string.IsNullOrEmpty(item.ReturnArrivalDate))
+                                                {
+                                                    <small><i class="ri-checkbox-circle-fill text-success"></i> Parti de Dakhla</small><br />
+                                                    <small class="text-muted">→ En route vers @(item.ReturnArrivalCity ?? "destination")</small>
+                                                }
+                                                else
+                                                {
+                                                    <small><i class="ri-checkbox-circle-fill text-success"></i> Voyage complet</small>
+                                                }
+                                            }
+                                            else if (item.VoyageStatus == "Completed")
+                                            {
+                                                <small class="text-success"><i class="ri-checkbox-circle-fill"></i> Voyage terminé</small>
+                                            }
+                                            else
+                                            {
+                                                <small class="text-muted">-</small>
                                             }
                                         </td>
                                         <td class="text-center">

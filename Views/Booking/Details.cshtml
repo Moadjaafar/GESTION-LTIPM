@@ -1,4 +1,5 @@
 @model GESTION_LTIPN.Models.Booking
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Détails de la réservation";
@@ -94,12 +95,28 @@
                                 <td>@(Model.NomClient ?? "-")</td>
                             </tr>
                             <tr>
+                                <th>ETD:</th>
+                                <td>
+                                    @if (Model.ETD.HasValue)
+                                    {
+                                        <strong class="text-info">@Model.ETD.Value.ToString("dd/MM/yyyy HH:mm")</strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
                                 <th>Statut:</th>
                                 <td>
                                     @switch (Model.BookingStatus)
                                     {
                                         case "Pending":
                                             <span class="badge bg-warning">En attente</span>
+                                            break;
+                                        case "Temporised":
+                                            <span class="badge bg-info">Temporisée</span>
                                             break;
                                         case "Validated":
                                             <span class="badge bg-success">Validée</span>
@@ -148,6 +165,110 @@
                             <p class="text-muted">@Model.Notes</p>
                         </div>
                     </div>
+                }
+
+                @* Temporisation Information *@
+                @if (Model.BookingStatus == "Temporised" && ViewBag.Temporisation != null)
+                {
+                    var temporisation = ViewBag.Temporisation as GESTION_LTIPN.Models.BookingTemporisation;
+                    if (temporisation != null)
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card border-warning">
+                                    <div class="card-header bg-warning text-white">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-clock me-2"></i>Informations de Temporisation
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p class="mb-2">
+                                                    <strong><i class="fas fa-user me-2"></i>Temporisé par:</strong><br />
+                                                    @temporisation.TemporisedByUser?.FullName
+                                                </p>
+                                                <p class="mb-2">
+                                                    <strong><i class="fas fa-calendar me-2"></i>Date de temporisation:</strong><br />
+                                                    @temporisation.TemporisedAt.ToString("dd/MM/yyyy HH:mm")
+                                                </p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p class="mb-2">
+                                                    <strong><i class="fas fa-calendar-check me-2"></i>Validation estimée:</strong><br />
+                                                    <span class="badge bg-primary">@temporisation.EstimatedValidationDate.ToString("dd/MM/yyyy")</span>
+                                                    @if (temporisation.DaysUntilEstimatedValidation < 0)
+                                                    {
+                                                        <span class="badge bg-danger ms-2">Dépassée</span>
+                                                    }
+                                                    else if (temporisation.DaysUntilEstimatedValidation == 0)
+                                                    {
+                                                        <span class="badge bg-warning ms-2">Aujourd'hui</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary ms-2">Dans @temporisation.DaysUntilEstimatedValidation jour(s)</span>
+                                                    }
+                                                </p>
+                                                <p class="mb-2">
+                                                    <strong><i class="fas fa-reply me-2"></i>Statut réponse:</strong><br />
+                                                    @switch (temporisation.CreatorResponse)
+                                                    {
+                                                        case "Pending":
+                                                            <span class="badge bg-warning">En attente de réponse</span>
+                                                            break;
+                                                        case "Accepted":
+                                                            <span class="badge bg-success">Acceptée</span>
+                                                            break;
+                                                        case "Refused":
+                                                            <span class="badge bg-danger">Refusée</span>
+                                                            break;
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-12">
+                                                <strong><i class="fas fa-comment me-2"></i>Raison:</strong>
+                                                <div class="alert alert-light border mt-2 mb-0">
+                                                    @temporisation.ReasonTemporisation
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @if (temporisation.CreatorResponse != "Pending" && temporisation.CreatorRespondedAt.HasValue)
+                                        {
+                                            <div class="row mt-3">
+                                                <div class="col-12">
+                                                    <hr />
+                                                    <strong><i class="fas fa-check-circle me-2"></i>Réponse du créateur:</strong>
+                                                    <p class="mb-1 text-muted">
+                                                        Répondu le @temporisation.CreatorRespondedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                                    </p>
+                                                    @if (!string.IsNullOrEmpty(temporisation.CreatorResponseNotes))
+                                                    {
+                                                        <div class="alert alert-info mt-2 mb-0">
+                                                            @temporisation.CreatorResponseNotes
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (temporisation.IsPending && User.IsInRole("Booking_Agent") && Model.CreatedByUserId == int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!))
+                                        {
+                                            <div class="row mt-3">
+                                                <div class="col-12">
+                                                    <hr />
+                                                    <a asp-action="RespondToTemporisation" asp-route-id="@temporisation.TemporisationId" class="btn btn-primary">
+                                                        <i class="fas fa-reply me-2"></i>Répondre à la temporisation
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 }
             </div>
         </div>

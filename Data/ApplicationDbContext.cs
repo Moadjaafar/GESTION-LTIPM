@@ -16,6 +16,7 @@ namespace GESTION_LTIPN.Data
         public DbSet<Camion> Camions { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<Voyage> Voyages { get; set; }
+        public DbSet<BookingTemporisation> BookingTemporisations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -162,6 +163,36 @@ namespace GESTION_LTIPN.Data
                       .WithMany()
                       .HasForeignKey(e => e.ValidatedByUserId)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure BookingTemporisation entity
+            modelBuilder.Entity<BookingTemporisation>(entity =>
+            {
+                entity.ToTable("BookingTemporisations");
+                entity.HasKey(e => e.TemporisationId);
+                entity.Property(e => e.ReasonTemporisation).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.EstimatedValidationDate).IsRequired();
+                entity.Property(e => e.CreatorResponse).HasMaxLength(50);
+                entity.Property(e => e.CreatorResponseNotes).HasMaxLength(500);
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+                entity.Property(e => e.TemporisedAt).HasDefaultValueSql("GETDATE()");
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETDATE()");
+
+                // Foreign Keys
+                entity.HasOne(e => e.Booking)
+                      .WithMany()
+                      .HasForeignKey(e => e.BookingId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.TemporisedByUser)
+                      .WithMany()
+                      .HasForeignKey(e => e.TemporisedByUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // Indexes for performance
+                entity.HasIndex(e => e.BookingId);
+                entity.HasIndex(e => new { e.IsActive, e.CreatorResponse });
             });
         }
     }

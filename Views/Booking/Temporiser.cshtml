@@ -1,0 +1,96 @@
+@model GESTION_LTIPN.Models.TemporiseBookingViewModel
+
+@{
+    ViewData["Title"] = "Temporiser la réservation";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="card-title text-white mb-0">
+                        <i class="fas fa-clock me-2"></i>Temporiser la réservation
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Booking Information Summary -->
+                    <div class="alert alert-info mb-4">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>Informations de la réservation
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Référence:</strong> @Model.BookingReference</p>
+                                <p class="mb-1"><strong>Numéro BK:</strong> @Model.Numero_BK</p>
+                                <p class="mb-0"><strong>Société:</strong> @Model.SocietyName</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Type de voyage:</strong> @Model.TypeVoyage</p>
+                                <p class="mb-0"><strong>Créé par:</strong> @Model.CreatedByUserName</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Temporisation Form -->
+                    <form asp-action="Temporiser" method="post">
+                        <input type="hidden" asp-for="BookingId" />
+                        <input type="hidden" asp-for="BookingReference" />
+                        <input type="hidden" asp-for="Numero_BK" />
+                        <input type="hidden" asp-for="SocietyName" />
+                        <input type="hidden" asp-for="TypeVoyage" />
+                        <input type="hidden" asp-for="CreatedByUserName" />
+
+                        <div class="mb-3">
+                            <label asp-for="ReasonTemporisation" class="form-label">
+                                Raison de la temporisation <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="ReasonTemporisation"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="Expliquez pourquoi cette réservation doit être temporisée..."
+                                      required></textarea>
+                            <span asp-validation-for="ReasonTemporisation" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                Cette raison sera communiquée au créateur de la réservation.
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="EstimatedValidationDate" class="form-label">
+                                Date estimée de validation <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="EstimatedValidationDate"
+                                   type="date"
+                                   class="form-control"
+                                   min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")"
+                                   required />
+                            <span asp-validation-for="EstimatedValidationDate" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                Indiquez quand vous pensez pouvoir valider cette réservation.
+                            </small>
+                        </div>
+
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Attention:</strong> Le créateur de la réservation recevra une notification et pourra accepter ou refuser cette temporisation.
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-clock me-2"></i>Temporiser
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.BookingId" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

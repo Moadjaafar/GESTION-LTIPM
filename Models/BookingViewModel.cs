@@ -38,6 +38,11 @@ namespace GESTION_LTIPN.Models
         [Display(Name = "Notes")]
         public string? Notes { get; set; }
 
+        [Required(ErrorMessage = "L'ETD est requis")]
+        [Display(Name = "ETD (Estimated Time of Departure)")]
+        [DataType(DataType.DateTime)]
+        public DateTime? ETD { get; set; }
+
         [Display(Name = "Statut")]
         public string BookingStatus { get; set; } = "Pending";
 

@@ -44,6 +44,7 @@
                                 <th>Type de voyage</th>
                                 <th>Nbr LTC</th>
                                 <th>Type Cont.</th>
+                                <th>ETD</th>
                                 <th>Statut</th>
                                 <th>Créé le</th>
                                 <th>Créé par</th>
@@ -79,10 +80,25 @@
                                             }
                                         </td>
                                         <td>
+                                            @if (item.ETD.HasValue)
+                                            {
+                                                <span class="text-info">@item.ETD.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
                                             @switch (item.BookingStatus)
                                             {
                                                 case "Pending":
                                                     <span class="badge bg-warning">En attente</span>
+                                                    break;
+                                                case "Temporised":
+                                                    <span class="badge bg-info">
+                                                        <i class="fas fa-clock me-1"></i>Temporisée
+                                                    </span>
                                                     break;
                                                 case "Validated":
                                                     <span class="badge bg-success">Validée</span>
@@ -122,7 +138,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="11" class="text-center py-5">
+                                    <td colspan="12" class="text-center py-5">
                                         <i class="ri-inbox-line fs-1 text-muted d-block mb-2"></i>
                                         <p class="text-muted mb-0">Aucune réservation trouvée</p>
                                     </td>

@@ -1,0 +1,147 @@
+@model GESTION_LTIPN.Models.RespondToTemporisationViewModel
+
+@{
+    ViewData["Title"] = "Répondre à la temporisation";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary">
+                    <h4 class="card-title text-white mb-0">
+                        <i class="fas fa-reply me-2"></i>Répondre à la temporisation
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Booking Information -->
+                    <div class="alert alert-info mb-4">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>Informations de la réservation
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Référence:</strong> @Model.BookingReference</p>
+                                <p class="mb-1"><strong>Numéro BK:</strong> @Model.Numero_BK</p>
+                                <p class="mb-0"><strong>Société:</strong> @Model.SocietyName</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Type de voyage:</strong> @Model.TypeVoyage</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Temporisation Details -->
+                    <div class="card mb-4 border-warning">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-clock me-2"></i>Détails de la temporisation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <strong><i class="fas fa-user me-2"></i>Temporisé par:</strong><br />
+                                        @Model.TemporisedByUserName
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <strong><i class="fas fa-calendar me-2"></i>Date de temporisation:</strong><br />
+                                        @Model.TemporisedAt.ToString("dd/MM/yyyy HH:mm")
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <p class="mb-2">
+                                    <strong><i class="fas fa-calendar-check me-2"></i>Date estimée de validation:</strong><br />
+                                    <span class="badge bg-primary fs-6">@Model.EstimatedValidationDate.ToString("dd/MM/yyyy")</span>
+                                </p>
+                            </div>
+                            <div>
+                                <p class="mb-1"><strong><i class="fas fa-comment me-2"></i>Raison:</strong></p>
+                                <div class="alert alert-light border">
+                                    @Model.ReasonTemporisation
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Response Form -->
+                    <form asp-action="RespondToTemporisation" method="post">
+                        <input type="hidden" asp-for="TemporisationId" />
+                        <input type="hidden" asp-for="BookingId" />
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <strong>Votre décision <span class="text-danger">*</span></strong>
+                            </label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="CreatorResponse" id="acceptRadio" value="Accepted" required>
+                                <label class="btn btn-outline-success" for="acceptRadio">
+                                    <i class="fas fa-check-circle me-2"></i>Accepter
+                                </label>
+
+                                <input type="radio" class="btn-check" name="CreatorResponse" id="refuseRadio" value="Refused" required>
+                                <label class="btn btn-outline-danger" for="refuseRadio">
+                                    <i class="fas fa-times-circle me-2"></i>Refuser
+                                </label>
+                            </div>
+                            <span asp-validation-for="CreatorResponse" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="CreatorResponseNotes" class="form-label">
+                                Notes (optionnel)
+                            </label>
+                            <textarea asp-for="CreatorResponseNotes"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Ajoutez des notes ou commentaires concernant votre décision..."></textarea>
+                            <span asp-validation-for="CreatorResponseNotes" class="text-danger"></span>
+                        </div>
+
+                        <!-- Decision Impact Messages -->
+                        <div id="acceptMessage" class="alert alert-success" style="display:none;" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>En acceptant:</strong> Votre réservation restera temporisée jusqu'à la date estimée de validation (@Model.EstimatedValidationDate.ToString("dd/MM/yyyy")).
+                        </div>
+
+                        <div id="refuseMessage" class="alert alert-danger" style="display:none;" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>En refusant:</strong> Votre réservation reviendra au statut "En attente" et devra être revalidée normalement.
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Envoyer ma réponse
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.BookingId" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Show appropriate message based on selected decision
+        document.querySelectorAll('input[name="CreatorResponse"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                if (this.value === 'Accepted') {
+                    document.getElementById('acceptMessage').style.display = 'block';
+                    document.getElementById('refuseMessage').style.display = 'none';
+                } else if (this.value === 'Refused') {
+                    document.getElementById('acceptMessage').style.display = 'none';
+                    document.getElementById('refuseMessage').style.display = 'block';
+                }
+            });
+        });
+    </script>
+}

@@ -45,6 +45,9 @@ namespace GESTION_LTIPN.Models
 
         public string? Notes { get; set; }
 
+        [Display(Name = "ETD (Estimated Time of Departure)")]
+        public DateTime? ETD { get; set; }
+
         // Navigation properties
         [ForeignKey("SocietyId")]
         public virtual Society? Society { get; set; }
