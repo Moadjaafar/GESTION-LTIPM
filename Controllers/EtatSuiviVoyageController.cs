@@ -196,12 +196,14 @@ namespace GESTION_LTIPN.Controllers
                     DepartureTime = voyage.DepartureTime?.ToString(@"hh\:mm"),
                     CamionFirstMatricule = camionFirstMatricule,
                     CamionFirstDriver = voyage.CamionFirst?.DriverName,
+                    CamionFirstPhone = voyage.CamionFirst?.DriverPhone,
                     ReceptionDate = voyage.ReceptionDate?.ToString("dd/MM/yyyy"),
                     ReceptionTime = voyage.ReceptionTime?.ToString(@"hh\:mm"),
                     ReturnDepartureDate = voyage.ReturnDepartureDate?.ToString("dd/MM/yyyy"),
                     ReturnDepartureTime = voyage.ReturnDepartureTime?.ToString(@"hh\:mm"),
                     CamionSecondMatricule = camionSecondMatricule,
                     CamionSecondDriver = voyage.CamionSecond?.DriverName,
+                    CamionSecondPhone = voyage.CamionSecond?.DriverPhone,
                     ReturnArrivalCity = voyage.ReturnArrivalCity,
                     ReturnArrivalDate = voyage.ReturnArrivalDate?.ToString("dd/MM/yyyy"),
                     ReturnArrivalTime = voyage.ReturnArrivalTime?.ToString(@"hh\:mm"),
@@ -310,10 +312,10 @@ namespace GESTION_LTIPN.Controllers
                     "Société Principale", "Société Secondaire",
                     "Type Départ", "Type Emballage",
                     "Ville Départ", "Date Départ", "Heure Départ",
-                    "Camion Départ", "Chauffeur Départ",
+                    "Camion Départ", "Chauffeur Départ", "Téléphone Départ",
                     "Date Réception", "Heure Réception",
                     "Date Départ Retour", "Heure Départ Retour",
-                    "Camion Retour", "Chauffeur Retour",
+                    "Camion Retour", "Chauffeur Retour", "Téléphone Retour",
                     "Ville Arrivée", "Date Arrivée", "Heure Arrivée",
                     "Prix Principal", "Prix Secondaire", "Devise",
                     "Durée Aller Dakhla", "Durée Séjour Dakhla", "Durée Retour", "Durée Totale",
@@ -348,23 +350,25 @@ namespace GESTION_LTIPN.Controllers
                     worksheet.Cell(currentRow, 13).Value = voyage.DepartureTime ?? "";
                     worksheet.Cell(currentRow, 14).Value = voyage.CamionFirstMatricule ?? "";
                     worksheet.Cell(currentRow, 15).Value = voyage.CamionFirstDriver ?? "";
-                    worksheet.Cell(currentRow, 16).Value = voyage.ReceptionDate ?? "";
-                    worksheet.Cell(currentRow, 17).Value = voyage.ReceptionTime ?? "";
-                    worksheet.Cell(currentRow, 18).Value = voyage.ReturnDepartureDate ?? "";
-                    worksheet.Cell(currentRow, 19).Value = voyage.ReturnDepartureTime ?? "";
-                    worksheet.Cell(currentRow, 20).Value = voyage.CamionSecondMatricule ?? "";
-                    worksheet.Cell(currentRow, 21).Value = voyage.CamionSecondDriver ?? "";
-                    worksheet.Cell(currentRow, 22).Value = voyage.ReturnArrivalCity ?? "";
-                    worksheet.Cell(currentRow, 23).Value = voyage.ReturnArrivalDate ?? "";
-                    worksheet.Cell(currentRow, 24).Value = voyage.ReturnArrivalTime ?? "";
-                    worksheet.Cell(currentRow, 25).Value = voyage.PricePrincipale ?? 0;
-                    worksheet.Cell(currentRow, 26).Value = voyage.PriceSecondaire ?? 0;
-                    worksheet.Cell(currentRow, 27).Value = voyage.Currency ?? "";
-                    worksheet.Cell(currentRow, 28).Value = voyage.DureeAllerDakhla ?? "";
-                    worksheet.Cell(currentRow, 29).Value = voyage.DureeSejourDakhla ?? "";
-                    worksheet.Cell(currentRow, 30).Value = voyage.DureeRetour ?? "";
-                    worksheet.Cell(currentRow, 31).Value = voyage.DureeTotale ?? "";
-                    worksheet.Cell(currentRow, 32).Value = voyage.CreatedAt ?? "";
+                    worksheet.Cell(currentRow, 16).Value = voyage.CamionFirstPhone ?? "";
+                    worksheet.Cell(currentRow, 17).Value = voyage.ReceptionDate ?? "";
+                    worksheet.Cell(currentRow, 18).Value = voyage.ReceptionTime ?? "";
+                    worksheet.Cell(currentRow, 19).Value = voyage.ReturnDepartureDate ?? "";
+                    worksheet.Cell(currentRow, 20).Value = voyage.ReturnDepartureTime ?? "";
+                    worksheet.Cell(currentRow, 21).Value = voyage.CamionSecondMatricule ?? "";
+                    worksheet.Cell(currentRow, 22).Value = voyage.CamionSecondDriver ?? "";
+                    worksheet.Cell(currentRow, 23).Value = voyage.CamionSecondPhone ?? "";
+                    worksheet.Cell(currentRow, 24).Value = voyage.ReturnArrivalCity ?? "";
+                    worksheet.Cell(currentRow, 25).Value = voyage.ReturnArrivalDate ?? "";
+                    worksheet.Cell(currentRow, 26).Value = voyage.ReturnArrivalTime ?? "";
+                    worksheet.Cell(currentRow, 27).Value = voyage.PricePrincipale ?? 0;
+                    worksheet.Cell(currentRow, 28).Value = voyage.PriceSecondaire ?? 0;
+                    worksheet.Cell(currentRow, 29).Value = voyage.Currency ?? "";
+                    worksheet.Cell(currentRow, 30).Value = voyage.DureeAllerDakhla ?? "";
+                    worksheet.Cell(currentRow, 31).Value = voyage.DureeSejourDakhla ?? "";
+                    worksheet.Cell(currentRow, 32).Value = voyage.DureeRetour ?? "";
+                    worksheet.Cell(currentRow, 33).Value = voyage.DureeTotale ?? "";
+                    worksheet.Cell(currentRow, 34).Value = voyage.CreatedAt ?? "";
 
                     currentRow++;
                 }

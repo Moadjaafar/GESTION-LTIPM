@@ -74,6 +74,7 @@ namespace GESTION_LTIPN.Models
         public string? DepartureTime { get; set; }
         public string? CamionFirstMatricule { get; set; }
         public string? CamionFirstDriver { get; set; }
+        public string? CamionFirstPhone { get; set; }
 
         // Phase 2: Reception in Dakhla
         public string? ReceptionDate { get; set; }
@@ -84,6 +85,7 @@ namespace GESTION_LTIPN.Models
         public string? ReturnDepartureTime { get; set; }
         public string? CamionSecondMatricule { get; set; }
         public string? CamionSecondDriver { get; set; }
+        public string? CamionSecondPhone { get; set; }
 
         // Phase 4: Return Arrival
         public string? ReturnArrivalCity { get; set; }

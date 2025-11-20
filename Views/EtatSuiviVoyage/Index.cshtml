@@ -141,8 +141,10 @@
                                     <th>N° Booking</th>
                                     <th>Client</th>
                                     <th>N° TC</th>
-                                    <th>Matricule</th>
-                                    <th>Chauffeur</th>
+                                    <th>Matricule 1</th>
+                                    <th>Chauffeur 1</th>
+                                    <th>Matricule 2</th>
+                                    <th>Chauffeur 2</th>
                                     <th>Article</th>
                                     <th>Trajet</th>
                                     <th class="text-end">Prix (MAD)</th>
@@ -179,10 +181,44 @@
                                             }
                                         </td>
                                         <td><small class="text-muted">@item.Numero_TC</small></td>
+                                        <!-- Matricule 1 -->
                                         <td>
                                             <span class="badge bg-dark">@item.CamionFirstMatricule</span>
                                         </td>
-                                        <td><small>@item.CamionFirstDriver</small></td>
+                                        <!-- Chauffeur 1 -->
+                                        <td>
+                                            <small>@item.CamionFirstDriver</small>
+                                            @if (!string.IsNullOrEmpty(item.CamionFirstPhone))
+                                            {
+                                                <br /><small class="text-muted"><i class="ri-phone-line"></i> @item.CamionFirstPhone</small>
+                                            }
+                                        </td>
+                                        <!-- Matricule 2 -->
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.CamionSecondMatricule) && item.CamionSecondMatricule != "-")
+                                            {
+                                                <span class="badge bg-secondary">@item.CamionSecondMatricule</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <!-- Chauffeur 2 -->
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.CamionSecondDriver) && item.CamionSecondDriver != "-")
+                                            {
+                                                <small>@item.CamionSecondDriver</small>
+                                                @if (!string.IsNullOrEmpty(item.CamionSecondPhone))
+                                                {
+                                                    <br /><small class="text-muted"><i class="ri-phone-line"></i> @item.CamionSecondPhone</small>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
                                         <td>
                                             @if (!string.IsNullOrEmpty(item.Type_Emballage))
                                             {
