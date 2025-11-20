@@ -171,7 +171,13 @@
                                                 <span class="text-muted">----</span>
                                             }
                                         </td>
-                                        <td><strong>@item.SocietyPrincipale</strong></td>
+                                        <td>
+                                            <strong>@item.SocietyPrincipale</strong>
+                                            @if (!string.IsNullOrEmpty(item.SocietySecondaire))
+                                            {
+                                                <br /><span class="badge bg-secondary mt-1">@item.SocietySecondaire</span>
+                                            }
+                                        </td>
                                         <td><small class="text-muted">@item.Numero_TC</small></td>
                                         <td>
                                             <span class="badge bg-dark">@item.CamionFirstMatricule</span>
@@ -212,6 +218,10 @@
                                             {
                                                 <span class="text-muted">-</span>
                                             }
+                                            @if (item.PriceSecondaire.HasValue)
+                                            {
+                                                <br /><span class="text-primary">@item.PriceSecondaire?.ToString("N1")</span>
+                                            }
                                         </td>
                                         <td>
                                             @if (!string.IsNullOrEmpty(item.ReturnArrivalDate))
@@ -242,10 +252,16 @@
                                             }
                                         </td>
                                         <td class="text-center">
-                                            <a asp-controller="Voyage" asp-action="Details" asp-route-id="@item.VoyageId"
-                                               class="btn btn-sm btn-outline-primary" title="Voir détails">
-                                                <i class="ri-eye-line"></i>
-                                            </a>
+                                            <div class="d-flex gap-1 justify-content-center">
+                                                <a asp-controller="Voyage" asp-action="Details" asp-route-id="@item.VoyageId"
+                                                   class="btn btn-sm btn-outline-primary" title="Voir détails">
+                                                    <i class="ri-eye-line"></i>
+                                                </a>
+                                                <a asp-controller="Voyage" asp-action="AssignVoyages" asp-route-bookingId="@item.BookingId"
+                                                   class="btn btn-sm btn-outline-success" title="Gérer les voyages">
+                                                    <i class="ri-route-line"></i>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                     operationNumber++;

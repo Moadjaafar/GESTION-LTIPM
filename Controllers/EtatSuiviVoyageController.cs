@@ -72,10 +72,10 @@ namespace GESTION_LTIPN.Controllers
                 .Include(v => v.CamionSecond)
                 .AsQueryable();
 
-            // Apply default filter: Show only voyages where DepartureDate is NULL
+            // Apply default filter: Show only voyages where ReturnArrivalDate is NULL
             if (isDefaultFilter)
             {
-                query = query.Where(v => v.DepartureDate == null);
+                query = query.Where(v => v.ReturnArrivalDate == null);
             }
             else
             {
@@ -176,128 +176,44 @@ namespace GESTION_LTIPN.Controllers
                 var camionFirstMatricule = voyage.CamionFirst?.CamionMatricule ?? "-";
                 var camionSecondMatricule = voyage.CamionSecond?.CamionMatricule ?? "-";
 
-                // If voyage has secondary society (Emballage), create TWO separate operations
-                if (voyage.SocietySecondaireId.HasValue && voyage.SocietySecondaire != null)
+                // Create single row per voyage, showing both societies and prices if exist
+                voyageItems.Add(new VoyageItemViewModel
                 {
-                    // Operation 1: For Principal Society
-                    voyageItems.Add(new VoyageItemViewModel
-                    {
-                        VoyageId = voyage.VoyageId,
-                        VoyageNumber = voyage.VoyageNumber,
-                        Numero_TC = voyage.Numero_TC,
-                        VoyageStatus = voyage.VoyageStatus,
-                        BookingId = voyage.BookingId,
-                        BookingReference = voyage.Booking?.BookingReference,
-                        Numero_BK = voyage.Booking?.Numero_BK,
-                        TypeVoyage = "EMBALLAGE",
-                        SocietyPrincipale = voyage.SocietyPrincipale?.SocietyName,
-                        SocietySecondaire = null, // Each operation shows only one society
-                        DepartureType = voyage.DepartureType,
-                        Type_Emballage = voyage.Type_Emballage,
-                        DepartureCity = voyage.DepartureCity,
-                        DepartureDate = voyage.DepartureDate?.ToString("dd/MM/yyyy"),
-                        DepartureTime = voyage.DepartureTime?.ToString(@"hh\:mm"),
-                        CamionFirstMatricule = camionFirstMatricule,
-                        CamionFirstDriver = voyage.CamionFirst?.DriverName,
-                        ReceptionDate = voyage.ReceptionDate?.ToString("dd/MM/yyyy"),
-                        ReceptionTime = voyage.ReceptionTime?.ToString(@"hh\:mm"),
-                        ReturnDepartureDate = voyage.ReturnDepartureDate?.ToString("dd/MM/yyyy"),
-                        ReturnDepartureTime = voyage.ReturnDepartureTime?.ToString(@"hh\:mm"),
-                        CamionSecondMatricule = camionSecondMatricule,
-                        CamionSecondDriver = voyage.CamionSecond?.DriverName,
-                        ReturnArrivalCity = voyage.ReturnArrivalCity,
-                        ReturnArrivalDate = voyage.ReturnArrivalDate?.ToString("dd/MM/yyyy"),
-                        ReturnArrivalTime = voyage.ReturnArrivalTime?.ToString(@"hh\:mm"),
-                        PricePrincipale = voyage.PricePrincipale, // Show principal price
-                        PriceSecondaire = null, // Don't show secondary price here
-                        Currency = voyage.Currency,
-                        DureeAllerDakhla = dureeAllerDakhla,
-                        DureeSejourDakhla = dureeSejourDakhla,
-                        DureeRetour = dureeRetour,
-                        DureeTotale = dureeTotale,
-                        CreatedAt = voyage.CreatedAt.ToString("dd/MM/yyyy HH:mm")
-                    });
-
-                    // Operation 2: For Secondary Society
-                    voyageItems.Add(new VoyageItemViewModel
-                    {
-                        VoyageId = voyage.VoyageId,
-                        VoyageNumber = voyage.VoyageNumber,
-                        Numero_TC = voyage.Numero_TC,
-                        VoyageStatus = voyage.VoyageStatus,
-                        BookingId = voyage.BookingId,
-                        BookingReference = voyage.Booking?.BookingReference,
-                        Numero_BK = voyage.Booking?.Numero_BK,
-                        TypeVoyage = "EMBALLAGE",
-                        SocietyPrincipale = voyage.SocietySecondaire?.SocietyName, // Show as principal for this operation
-                        SocietySecondaire = null,
-                        DepartureType = voyage.DepartureType,
-                        Type_Emballage = voyage.Type_Emballage,
-                        DepartureCity = voyage.DepartureCity,
-                        DepartureDate = voyage.DepartureDate?.ToString("dd/MM/yyyy"),
-                        DepartureTime = voyage.DepartureTime?.ToString(@"hh\:mm"),
-                        CamionFirstMatricule = camionFirstMatricule,
-                        CamionFirstDriver = voyage.CamionFirst?.DriverName,
-                        ReceptionDate = voyage.ReceptionDate?.ToString("dd/MM/yyyy"),
-                        ReceptionTime = voyage.ReceptionTime?.ToString(@"hh\:mm"),
-                        ReturnDepartureDate = voyage.ReturnDepartureDate?.ToString("dd/MM/yyyy"),
-                        ReturnDepartureTime = voyage.ReturnDepartureTime?.ToString(@"hh\:mm"),
-                        CamionSecondMatricule = camionSecondMatricule,
-                        CamionSecondDriver = voyage.CamionSecond?.DriverName,
-                        ReturnArrivalCity = voyage.ReturnArrivalCity,
-                        ReturnArrivalDate = voyage.ReturnArrivalDate?.ToString("dd/MM/yyyy"),
-                        ReturnArrivalTime = voyage.ReturnArrivalTime?.ToString(@"hh\:mm"),
-                        PricePrincipale = voyage.PriceSecondaire, // Show secondary price as principal for this operation
-                        PriceSecondaire = null,
-                        Currency = voyage.Currency,
-                        DureeAllerDakhla = dureeAllerDakhla,
-                        DureeSejourDakhla = dureeSejourDakhla,
-                        DureeRetour = dureeRetour,
-                        DureeTotale = dureeTotale,
-                        CreatedAt = voyage.CreatedAt.ToString("dd/MM/yyyy HH:mm")
-                    });
-                }
-                else
-                {
-                    // Single operation for voyages without secondary society
-                    voyageItems.Add(new VoyageItemViewModel
-                    {
-                        VoyageId = voyage.VoyageId,
-                        VoyageNumber = voyage.VoyageNumber,
-                        Numero_TC = voyage.Numero_TC,
-                        VoyageStatus = voyage.VoyageStatus,
-                        BookingId = voyage.BookingId,
-                        BookingReference = voyage.Booking?.BookingReference,
-                        Numero_BK = voyage.Booking?.Numero_BK,
-                        TypeVoyage = voyage.Booking?.TypeVoyage,
-                        SocietyPrincipale = voyage.SocietyPrincipale?.SocietyName,
-                        SocietySecondaire = null,
-                        DepartureType = voyage.DepartureType,
-                        Type_Emballage = voyage.Type_Emballage,
-                        DepartureCity = voyage.DepartureCity,
-                        DepartureDate = voyage.DepartureDate?.ToString("dd/MM/yyyy"),
-                        DepartureTime = voyage.DepartureTime?.ToString(@"hh\:mm"),
-                        CamionFirstMatricule = camionFirstMatricule,
-                        CamionFirstDriver = voyage.CamionFirst?.DriverName,
-                        ReceptionDate = voyage.ReceptionDate?.ToString("dd/MM/yyyy"),
-                        ReceptionTime = voyage.ReceptionTime?.ToString(@"hh\:mm"),
-                        ReturnDepartureDate = voyage.ReturnDepartureDate?.ToString("dd/MM/yyyy"),
-                        ReturnDepartureTime = voyage.ReturnDepartureTime?.ToString(@"hh\:mm"),
-                        CamionSecondMatricule = camionSecondMatricule,
-                        CamionSecondDriver = voyage.CamionSecond?.DriverName,
-                        ReturnArrivalCity = voyage.ReturnArrivalCity,
-                        ReturnArrivalDate = voyage.ReturnArrivalDate?.ToString("dd/MM/yyyy"),
-                        ReturnArrivalTime = voyage.ReturnArrivalTime?.ToString(@"hh\:mm"),
-                        PricePrincipale = voyage.PricePrincipale,
-                        PriceSecondaire = null,
-                        Currency = voyage.Currency,
-                        DureeAllerDakhla = dureeAllerDakhla,
-                        DureeSejourDakhla = dureeSejourDakhla,
-                        DureeRetour = dureeRetour,
-                        DureeTotale = dureeTotale,
-                        CreatedAt = voyage.CreatedAt.ToString("dd/MM/yyyy HH:mm")
-                    });
-                }
+                    VoyageId = voyage.VoyageId,
+                    VoyageNumber = voyage.VoyageNumber,
+                    Numero_TC = voyage.Numero_TC,
+                    VoyageStatus = voyage.VoyageStatus,
+                    BookingId = voyage.BookingId,
+                    BookingReference = voyage.Booking?.BookingReference,
+                    Numero_BK = voyage.Booking?.Numero_BK,
+                    TypeVoyage = voyage.Booking?.TypeVoyage, // Use booking type (Congelé/DRY)
+                    SocietyPrincipale = voyage.SocietyPrincipale?.SocietyName,
+                    SocietySecondaire = voyage.SocietySecondaire?.SocietyName, // Show secondary if exists
+                    DepartureType = voyage.DepartureType, // Emballage/Empty
+                    Type_Emballage = voyage.Type_Emballage,
+                    DepartureCity = voyage.DepartureCity,
+                    DepartureDate = voyage.DepartureDate?.ToString("dd/MM/yyyy"),
+                    DepartureTime = voyage.DepartureTime?.ToString(@"hh\:mm"),
+                    CamionFirstMatricule = camionFirstMatricule,
+                    CamionFirstDriver = voyage.CamionFirst?.DriverName,
+                    ReceptionDate = voyage.ReceptionDate?.ToString("dd/MM/yyyy"),
+                    ReceptionTime = voyage.ReceptionTime?.ToString(@"hh\:mm"),
+                    ReturnDepartureDate = voyage.ReturnDepartureDate?.ToString("dd/MM/yyyy"),
+                    ReturnDepartureTime = voyage.ReturnDepartureTime?.ToString(@"hh\:mm"),
+                    CamionSecondMatricule = camionSecondMatricule,
+                    CamionSecondDriver = voyage.CamionSecond?.DriverName,
+                    ReturnArrivalCity = voyage.ReturnArrivalCity,
+                    ReturnArrivalDate = voyage.ReturnArrivalDate?.ToString("dd/MM/yyyy"),
+                    ReturnArrivalTime = voyage.ReturnArrivalTime?.ToString(@"hh\:mm"),
+                    PricePrincipale = voyage.PricePrincipale, // Show principal price
+                    PriceSecondaire = voyage.PriceSecondaire, // Show secondary price if exists
+                    Currency = voyage.Currency,
+                    DureeAllerDakhla = dureeAllerDakhla,
+                    DureeSejourDakhla = dureeSejourDakhla,
+                    DureeRetour = dureeRetour,
+                    DureeTotale = dureeTotale,
+                    CreatedAt = voyage.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                });
             }
 
             return voyageItems;
@@ -311,7 +227,7 @@ namespace GESTION_LTIPN.Controllers
 
             if (isDefaultFilter)
             {
-                titleParts.Add("Voyages sans date de départ");
+                titleParts.Add("Voyages en cours (sans arrivée retour)");
             }
             else
             {
