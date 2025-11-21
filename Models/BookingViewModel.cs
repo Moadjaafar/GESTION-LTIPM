@@ -11,7 +11,7 @@ namespace GESTION_LTIPN.Models
 
         [Required(ErrorMessage = "Le numéro BK est requis")]
         [Display(Name = "Numéro BK")]
-        [StringLength(50, ErrorMessage = "Le numéro BK ne peut pas dépasser 50 caractères")]
+        [StringLength(15, ErrorMessage = "Le numéro BK ne peut pas dépasser 15 caractères")]
         public string Numero_BK { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La société est requise")]

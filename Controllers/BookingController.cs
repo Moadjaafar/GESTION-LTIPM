@@ -526,6 +526,7 @@ namespace GESTION_LTIPN.Controllers
 
             var booking = await _context.Bookings
                 .Include(b => b.CreatedByUser)
+                .Include(b => b.Society)
                 .FirstOrDefaultAsync(b => b.BookingId == model.BookingId);
 
             if (booking == null)
@@ -584,14 +585,43 @@ namespace GESTION_LTIPN.Controllers
             _logger.LogInformation("Booking {BookingId} temporised by user {UserId} until {EstimatedDate}",
                 model.BookingId, userId, model.EstimatedValidationDate);
 
-            // TODO: Send email notification to booking creator
+            // Send email notification to booking creator
             try
             {
-                if (booking.CreatedByUser != null && !string.IsNullOrEmpty(booking.CreatedByUser.Email))
+                _logger.LogInformation("Attempting to send temporisation email for booking {BookingId}", model.BookingId);
+
+                if (booking.CreatedByUser == null)
                 {
-                    // Email notification logic here
-                    _logger.LogInformation("Email notification sent to {Email} for temporisation of booking {BookingId}",
-                        booking.CreatedByUser.Email, model.BookingId);
+                    _logger.LogWarning("Cannot send temporisation email: CreatedByUser is null for booking {BookingId}", model.BookingId);
+                }
+                else if (string.IsNullOrEmpty(booking.CreatedByUser.Email))
+                {
+                    _logger.LogWarning("Cannot send temporisation email: CreatedByUser email is empty for booking {BookingId}", model.BookingId);
+                }
+                else if (booking.Society == null)
+                {
+                    _logger.LogWarning("Cannot send temporisation email: Society is null for booking {BookingId}", model.BookingId);
+                }
+                else
+                {
+                    var temporisedByUser = await _context.Users.FindAsync(userId);
+                    if (temporisedByUser == null)
+                    {
+                        _logger.LogWarning("Cannot send temporisation email: temporisedByUser not found for userId {UserId}", userId);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Sending email to {Email} for booking {BookingId}", booking.CreatedByUser.Email, model.BookingId);
+                        await _emailService.SendBookingTemporisedEmailAsync(
+                            booking.CreatedByUser.Email,
+                            booking,
+                            temporisation,
+                            temporisedByUser,
+                            booking.Society
+                        );
+                        _logger.LogInformation("Email notification successfully sent to {Email} for temporisation of booking {BookingId}",
+                            booking.CreatedByUser.Email, model.BookingId);
+                    }
                 }
             }
             catch (Exception ex)
@@ -681,6 +711,8 @@ namespace GESTION_LTIPN.Controllers
 
             var temporisation = await _context.BookingTemporisations
                 .Include(t => t.Booking)
+                    .ThenInclude(b => b.Society)
+                .Include(t => t.TemporisedByUser)
                 .FirstOrDefaultAsync(t => t.TemporisationId == model.TemporisationId);
 
             if (temporisation == null)
@@ -739,11 +771,25 @@ namespace GESTION_LTIPN.Controllers
 
             await _context.SaveChangesAsync();
 
-            // TODO: Send email notification to admin/validator
+            // Send email notification to admin/validator who temporised the booking
             try
             {
-                _logger.LogInformation("Email notification sent to admin about creator response for temporisation {TemporisationId}",
-                    model.TemporisationId);
+                if (temporisation.TemporisedByUser != null && !string.IsNullOrEmpty(temporisation.TemporisedByUser.Email))
+                {
+                    var creatorUser = await _context.Users.FindAsync(userId);
+                    if (creatorUser != null && booking.Society != null)
+                    {
+                        await _emailService.SendTemporisationResponseEmailAsync(
+                            temporisation.TemporisedByUser.Email,
+                            booking,
+                            temporisation,
+                            creatorUser,
+                            booking.Society
+                        );
+                        _logger.LogInformation("Email notification sent to {Email} about creator response for temporisation {TemporisationId}",
+                            temporisation.TemporisedByUser.Email, model.TemporisationId);
+                    }
+                }
             }
             catch (Exception ex)
             {

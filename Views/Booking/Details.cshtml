@@ -293,7 +293,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>N° TC</th>
-                                    @if (!isBookingAgent)
+                                    @if (User.IsInRole("Admin"))
                                     {
                                         <th>Société Principale</th>
                                         <th>Société Secondaire</th>
@@ -304,7 +304,7 @@
                                     <th>Type Emballage</th>
                                     <th>Camion</th>
                                     <th>Statut</th>
-                                    @if (!isBookingAgent)
+                                    @if (User.IsInRole("Admin"))
                                     {
                                         <th>Prix Principal</th>
                                         <th>Prix Secondaire</th>
@@ -327,7 +327,7 @@
                                                 <span class="text-muted">-</span>
                                             }
                                         </td>
-                                        @if (!isBookingAgent)
+                                        @if (User.IsInRole("Admin"))
                                         {
                                             <td>@voyage.SocietyPrincipale?.SocietyName</td>
                                             <td>@(voyage.SocietySecondaire?.SocietyName ?? "-")</td>
@@ -406,7 +406,7 @@
                                                     break;
                                             }
                                         </td>
-                                        @if (!isBookingAgent)
+                                        @if (User.IsInRole("Admin"))
                                         {
                                             <td>
                                                 @if (voyage.PricePrincipale.HasValue)

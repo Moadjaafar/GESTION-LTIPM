@@ -85,6 +85,41 @@ namespace GESTION_LTIPN.Services
             }
         }
 
+        public async Task SendBookingTemporisedEmailAsync(string toEmail, Booking booking, BookingTemporisation temporisation, User temporisedByUser, Society society)
+        {
+            try
+            {
+                string subject = $"⏸️ Réservation Temporisée - {booking.Numero_BK}";
+                string body = BuildBookingTemporisedEmailBody(booking, temporisation, temporisedByUser, society);
+
+                await SendEmailAsync(toEmail, subject, body, true);
+                _logger.LogInformation($"Booking temporisation email sent to {toEmail} for {booking.Numero_BK}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending booking temporisation email to {toEmail} for {booking.Numero_BK}");
+                // Don't throw - we don't want email failures to break booking temporisation
+            }
+        }
+
+        public async Task SendTemporisationResponseEmailAsync(string toEmail, Booking booking, BookingTemporisation temporisation, User creatorUser, Society society)
+        {
+            try
+            {
+                string responseType = temporisation.CreatorResponse == "Accepted" ? "Acceptée" : "Refusée";
+                string subject = $"📬 Réponse à la Temporisation {responseType} - {booking.Numero_BK}";
+                string body = BuildTemporisationResponseEmailBody(booking, temporisation, creatorUser, society);
+
+                await SendEmailAsync(toEmail, subject, body, true);
+                _logger.LogInformation($"Temporisation response email sent to {toEmail} for {booking.Numero_BK}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending temporisation response email to {toEmail} for {booking.Numero_BK}");
+                // Don't throw - we don't want email failures to break temporisation response
+            }
+        }
+
         public async Task SendEmailAsync(string toEmail, string subject, string body, bool isHtml = true)
         {
             try
@@ -433,6 +468,218 @@ namespace GESTION_LTIPN.Services
                 "Trans_Respo" => "Responsable Transport",
                 _ => role
             };
+        }
+
+        private string BuildBookingTemporisedEmailBody(Booking booking, BookingTemporisation temporisation, User temporisedByUser, Society society)
+        {
+            StringBuilder body = new StringBuilder();
+            body.AppendLine("<!DOCTYPE html>");
+            body.AppendLine("<html><head><meta charset='utf-8'></head><body>");
+            body.AppendLine("<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>");
+
+            // Header - Orange/Warning theme
+            body.AppendLine("<div style='background-color: #fd7e14; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;'>");
+            body.AppendLine("<h2 style='margin: 0;'>⏸️ Votre Réservation a été Temporisée</h2>");
+            body.AppendLine("</div>");
+
+            // Content
+            body.AppendLine("<div style='background-color: #f8f9fa; padding: 20px; border: 1px solid #dee2e6; border-radius: 0 0 8px 8px;'>");
+            body.AppendLine($"<p>Bonjour,</p>");
+            body.AppendLine("<p>Nous vous informons que votre réservation de transport a été temporisée et nécessite votre attention.</p>");
+
+            // Details table
+            body.AppendLine("<table style='width: 100%; border-collapse: collapse; margin: 20px 0; background-color: white;'>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Numéro BK:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'><strong>{booking.Numero_BK}</strong></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Référence:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'><strong>{booking.BookingReference}</strong></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Société:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{society.SocietyName}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Type de voyage:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{booking.TypeVoyage}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Nombre de LTC:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6; color: #fd7e14; font-weight: bold;'>{booking.Nbr_LTC}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Statut:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'><span style='background-color: #fd7e14; color: white; padding: 4px 8px; border-radius: 4px;'>Temporisée</span></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Date de temporisation:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{temporisation.TemporisedAt:dd/MM/yyyy HH:mm}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Temporisée par:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{temporisedByUser.FullName} ({temporisedByUser.Username})</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #fff3cd;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Date de validation estimée:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'><strong style='color: #fd7e14;'>{temporisation.EstimatedValidationDate:dd/MM/yyyy}</strong></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #fff3cd;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Raison:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{temporisation.ReasonTemporisation}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("</table>");
+
+            // Warning box
+            body.AppendLine("<div style='background-color: #fff3cd; border: 1px solid #ffecb5; border-radius: 5px; padding: 15px; margin: 20px 0;'>");
+            body.AppendLine("<p style='margin: 0; color: #664d03;'><strong>⚠️ Action requise:</strong></p>");
+            body.AppendLine("<p style='margin: 5px 0; color: #664d03;'>Votre réservation a été temporisée et nécessite une réponse de votre part. Vous devez accepter ou refuser cette temporisation.</p>");
+            body.AppendLine("<p style='margin: 5px 0; color: #664d03;'>• <strong>Accepter</strong>: La réservation sera validée autour de la date estimée indiquée ci-dessus</p>");
+            body.AppendLine("<p style='margin: 5px 0; color: #664d03;'>• <strong>Refuser</strong>: La réservation reviendra au statut \"En attente\" pour validation immédiate</p>");
+            body.AppendLine("</div>");
+
+            // Action button
+            body.AppendLine("<div style='text-align: center; margin: 30px 0;'>");
+            body.AppendLine("<a href='http://10.77.105.112:2052' style='display: inline-block; background-color: #fd7e14; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Répondre à la temporisation</a>");
+            body.AppendLine("</div>");
+
+            body.AppendLine("<p style='margin-top: 20px;'>Merci de répondre dans les plus brefs délais.</p>");
+            body.AppendLine("<p style='margin-top: 10px;'>Cordialement,<br/>Système de Gestion LTIPM</p>");
+
+            body.AppendLine("<p style='font-size: 12px; color: #6c757d; margin-top: 20px; border-top: 1px solid #dee2e6; padding-top: 10px;'>");
+            body.AppendLine("Ceci est un email automatique, merci de ne pas y répondre directement.");
+            body.AppendLine("</p>");
+            body.AppendLine("</div>");
+            body.AppendLine("</div>");
+            body.AppendLine("</body></html>");
+
+            return body.ToString();
+        }
+
+        private string BuildTemporisationResponseEmailBody(Booking booking, BookingTemporisation temporisation, User creatorUser, Society society)
+        {
+            bool isAccepted = temporisation.CreatorResponse == "Accepted";
+            string headerColor = isAccepted ? "#198754" : "#dc3545";
+            string statusColor = isAccepted ? "#198754" : "#dc3545";
+            string statusText = isAccepted ? "Acceptée" : "Refusée";
+            string icon = isAccepted ? "✅" : "❌";
+
+            StringBuilder body = new StringBuilder();
+            body.AppendLine("<!DOCTYPE html>");
+            body.AppendLine("<html><head><meta charset='utf-8'></head><body>");
+            body.AppendLine("<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>");
+
+            // Header - Green for accepted, Red for refused
+            body.AppendLine($"<div style='background-color: {headerColor}; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;'>");
+            body.AppendLine($"<h2 style='margin: 0;'>{icon} Réponse à la Temporisation: {statusText}</h2>");
+            body.AppendLine("</div>");
+
+            // Content
+            body.AppendLine("<div style='background-color: #f8f9fa; padding: 20px; border: 1px solid #dee2e6; border-radius: 0 0 8px 8px;'>");
+            body.AppendLine($"<p>Bonjour,</p>");
+            body.AppendLine($"<p>Le créateur de la réservation a <strong>{(isAccepted ? "accepté" : "refusé")}</strong> la temporisation.</p>");
+
+            // Details table
+            body.AppendLine("<table style='width: 100%; border-collapse: collapse; margin: 20px 0; background-color: white;'>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Numéro BK:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'><strong>{booking.Numero_BK}</strong></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Référence:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'><strong>{booking.BookingReference}</strong></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Société:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{society.SocietyName}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Type de voyage:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{booking.TypeVoyage}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Nombre de LTC:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>{booking.Nbr_LTC}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine($"<tr style='background-color: {(isAccepted ? "#d1f2eb" : "#f8d7da")};'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Réponse du créateur:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'><span style='background-color: {statusColor}; color: white; padding: 4px 8px; border-radius: 4px;'>{statusText}</span></td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Date de réponse:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{temporisation.CreatorRespondedAt:dd/MM/yyyy HH:mm}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Répondu par:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{creatorUser.FullName} ({creatorUser.Username})</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr style='background-color: #e9ecef;'>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Date de validation estimée:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{temporisation.EstimatedValidationDate:dd/MM/yyyy}</td>");
+            body.AppendLine("</tr>");
+
+            body.AppendLine("<tr>");
+            body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Raison de temporisation:</td>");
+            body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{temporisation.ReasonTemporisation}</td>");
+            body.AppendLine("</tr>");
+
+            if (!string.IsNullOrEmpty(temporisation.CreatorResponseNotes))
+            {
+                body.AppendLine("<tr style='background-color: #fff3cd;'>");
+                body.AppendLine("<td style='padding: 12px; border: 1px solid #dee2e6; font-weight: bold;'>Notes du créateur:</td>");
+                body.AppendLine($"<td style='padding: 12px; border: 1px solid #dee2e6;'>{temporisation.CreatorResponseNotes}</td>");
+                body.AppendLine("</tr>");
+            }
+
+            body.AppendLine("</table>");
+
+            // Info box based on response
+            if (isAccepted)
+            {
+                body.AppendLine("<div style='background-color: #d1ecf1; border: 1px solid #bee5eb; border-radius: 5px; padding: 15px; margin: 20px 0;'>");
+                body.AppendLine("<p style='margin: 0; color: #0c5460;'><strong>📋 Prochaines étapes:</strong></p>");
+                body.AppendLine($"<p style='margin: 5px 0; color: #0c5460;'>La réservation reste temporisée jusqu'au {temporisation.EstimatedValidationDate:dd/MM/yyyy}. Vous pourrez la valider à cette date ou avant si les conditions le permettent.</p>");
+                body.AppendLine("</div>");
+            }
+            else
+            {
+                body.AppendLine("<div style='background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; padding: 15px; margin: 20px 0;'>");
+                body.AppendLine("<p style='margin: 0; color: #721c24;'><strong>⚠️ Action requise:</strong></p>");
+                body.AppendLine("<p style='margin: 5px 0; color: #721c24;'>La temporisation a été refusée. La réservation est revenue au statut \"En attente\" et nécessite une validation immédiate ou une nouvelle temporisation.</p>");
+                body.AppendLine("</div>");
+            }
+
+            body.AppendLine("<p style='margin-top: 20px;'>Cordialement,<br/>Système de Gestion LTIPM</p>");
+
+            body.AppendLine("<p style='font-size: 12px; color: #6c757d; margin-top: 20px; border-top: 1px solid #dee2e6; padding-top: 10px;'>");
+            body.AppendLine("Ceci est un email automatique, merci de ne pas y répondre directement.");
+            body.AppendLine("</p>");
+            body.AppendLine("</div>");
+            body.AppendLine("</div>");
+            body.AppendLine("</body></html>");
+
+            return body.ToString();
         }
     }
 }
